@@ -18,38 +18,43 @@ from subprocess import call
 
 
 # Collect raw data 
-def collect:
-        subprocess.call(['sudo /home/mike/research/code/boolean_collect.sh local'], shell=True)
-        subprocess.call(['sudo /home/mike/research/code/fcontext_collect.sh local'], shell=True)
-        subprocess.call(['sudo /home/mike/research/code/service_collect.sh local'], shell=True)
+def collect(runanswer):
+        if runanswer == "Y":
+                print "Running collection scripts"
+                subprocess.call(['sudo /home/mike/research/code/boolean_collect.sh local'], shell=True)
+                subprocess.call(['sudo /home/mike/research/code/fcontext_collect.sh local'], shell=True)
+                subprocess.call(['sudo /home/mike/research/code/service_collect.sh local'], shell=True)
+                print "Scripts Ran"
+        else:
+                print "Test NOT run"
         # check for success?
-        return;
+        return
 
 ## MongoDB 
 def mongoconnect (dbname):
         client = MongoClient('localhost', 27017)
         db = dbname
+        print "Connected to: ", db, "-", client 
         # add a connection test?
-        return client, db;
-
-
+        return
 
 # Set System name, test number and the ip 
 system = "localhost"    # set per test1 / base 1, etc
 test = 1                # set to 1 initally 
 ip = "local"            # local only for all tests
 
-print ("Copy and paste the raw text field")
+print "Enter Test Number"
 testnum=raw_input("test: ")
 if not testnum:
     raise ValueError('empty string')
+test = testnum
+print "Test Number set at: ", test
 
-print ("Run input scripts")
-runin=raw_input("Y or N: ")
-if runin == "Y":
-        collect()
-if not runin:
+print "Run input scripts"
+runanswer=raw_input("Y or N: ")
+if not runanswer:
     raise ValueError('empty string')
+collect(runanswer)
 
 
 
