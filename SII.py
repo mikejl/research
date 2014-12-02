@@ -1,10 +1,12 @@
-#
+# ################################################################
 # SELinux Integrity Instrumentation
-#
-# Prototype Framework 
+# Mike Libassi
+# 2014/15
 ####################################################################
 
+# ################################################################
 # Load environmental items
+# ################################################################
 import sys 
 import md5
 import csv
@@ -17,6 +19,11 @@ from pymongo import MongoClient
 from subprocess import call
 
 
+# ################################################################
+# Functions
+# ################################################################
+
+# ################################################################
 # Collect raw data 
 def collect(runanswer):
         if runanswer == "Y":
@@ -30,7 +37,8 @@ def collect(runanswer):
         # check for success?
         return
 
-## MongoDB 
+# ################################################################
+## MongoDB Connect
 def mongoconnect (dbname):
         client = MongoClient('localhost', 27017)
         db = dbname
@@ -38,17 +46,46 @@ def mongoconnect (dbname):
         # add a connection test?
         return
 
-# Set System name, test number and the ip 
+# ################################################################
+## Hash Function
+def tohash(*hashstring):
+        htuple = [''.join(x) for x in hashstring]
+        htuple2 = ''.join(htuple)
+        return(md5.new(htuple2).hexdigest())
+
+
+
+
+# ################################################################
+# Set vars
+# ################################################################
 system = "localhost"    # set per test1 / base 1, etc
 test = 1                # set to 1 initally 
 ip = "local"            # local only for all tests
 
+# ################################################################
+
+# Make a menu menu with:
+# 1. Set test number / show test numbers
+# 2. Set / print system name
+# 3. Run collect scripts (pass in test # and add to path in shell)
+# 4. Run parsing (boolens, service and context)
+# 5. Run / view finger prints
+# 6. View Diffs
+# 7. View Relationships 
+# 8. misc
+# 9. Exit
+
+# ################################################################
+# Inputs
 print "Enter Test Number"
 testnum=raw_input("test: ")
 if not testnum:
     raise ValueError('empty string')
 test = testnum
 print "Test Number set at: ", test
+
+# ################################################################
 
 print "Run input scripts"
 runanswer=raw_input("Y or N: ")
@@ -57,10 +94,9 @@ if not runanswer:
 collect(runanswer)
 
 
-
-
+# ################################################################
 # Boolean Parse and Load
-# Connect to booleans
+# ################################################################
 mongoconnect(client.booleans)
 
 # path .. may hardcode to local
@@ -87,7 +123,7 @@ for text in open(path, 'r'):
         domain1 = open(os.path.join(dir_name, base_filename + filename_suffix), 'r')
         Domain = domain1.read().strip()
         tohash = Boolean+Default+State+Domain
-        # Send tohas to a hash function return hash valus
+        # Send tohas to a hash function return hash values
         Hash = md5.new(tohash).hexdigest()
         ## Input into mongodb boolean collection 
         ## Mongo insert with date/time stamp 
@@ -104,8 +140,9 @@ subprocess.call(['mongoexport --host localhost -d booleans -c booleans --csv -f 
 
 # File context parse and load
 
-
+# ################################################################
 ## MongoDB fcontext collection
+# ################################################################
 mongoconnect(client.fcontext)
 
 path = "/home/mike/research/raw/" + ip + "/fcontext.txt"
@@ -144,8 +181,9 @@ print "loaded into fcontext: ", db.fcontext.count()
 ## CSV Output
 subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Path,Type,Context,Hash,date" > /home/mike/research/data/fcontext.csv'], shell=True)
 
-
+# ################################################################
 # Service data Parse and Load
+# ################################################################
 mongoconnect(client.service)
 
 path = "/home/mike/research/raw/" + ip + "/service.running"
@@ -189,73 +227,61 @@ subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "S
 print "loaded into service: ", db.service.count()
 
 # ################################################################
-## Build finderprints of service, policy and context 
+# # Build finderprints of service, policy and context            #
 # ################################################################
 
+# ################################################################
 ## MongoDB booleans collection
 mongoconnect(client.booleans)
-
 hash1 = ""
 hash2 = ""
-
-
 for item in db.booleans.find({},{"Hash": 1}):
     hash1 = item['Hash']
     tohash = hash1+hash2
     pfp = md5.new(tohash).hexdigest()
     hash2 = pfp
-
 print "***************************************************"
 print "Policy Finger Print: ", pfp
 print "Item Count: ", db.booleans.find().count()
 print "***************************************************"
-
 # Export to CSV    
 subprocess.call(['mongoexport --host localhost -d boolean -c boolean --csv -f "Hash" > /home/mike/research/p-hlist.txt'], shell=True)  
 
-
-
-
+# ################################################################
 ## MongoDB fContext collection
 mongoconnect(client.fcontext)
-
 hash1 = ""
 hash2 = ""
-
 for item in db.fcontext.find({},{"Hash": 1}):
     hash1 = item['Hash']
     tohash = hash1+hash2
     cfp = md5.new(tohash).hexdigest()
     hash2 = cfp
-
 print "***************************************************"
 print "FContext Finger Print: ", cfp
 print "Item Count: ", db.fcontext.find().count()
 print "***************************************************"
-
 # Export to CSV    
 subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)  
 
-
+# ################################################################
 ## MongoDB service collection
 mongoconnect(client.service)
-
 hash1 = ""
 hash2 = ""
-
 for item in db.service.find({},{"Hash": 1}):
     hash1 = item['Hash']
     tohash = hash1+hash2
     sfp = md5.new(tohash).hexdigest()
     hash2 = sfp
-
 print "***************************************************"
 print "Service Finger Print: ", sfp
 print "Item Count: ", db.service.find().count()
 print "***************************************************"
-
 # Export to CSV    
 subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)  
+
+# ################################################################
 
 ##TODO
 # Make a tuple in a system table to have system, date/time, test#, pfp, cfp and sfp 
