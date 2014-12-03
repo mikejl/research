@@ -19,12 +19,12 @@ from pymongo import MongoClient
 #from subprocess import call
 
 # ################################################################
-# Set vars
+# Set Initial Gloval vars
 # ################################################################
 system = "localhost"    # set per test1 / base 1, etc
 test = 0                # set to 0 initally 
 ip = "local"            # local only for all tests
-
+client = MongoClient('localhost', 27017)
 
 # ################################################################
 # Functions
@@ -39,7 +39,7 @@ def printmm():
     print "4. Run parsing (boolens, service and context)"
     print "5. Run / view finger prints"
     print "6. View Diffs"
-    print "7. View Relationships"
+    print "7. Search / View Relationships"
     print "8. misc"
     print "9. Exit"
     print "-------------------------"
@@ -288,6 +288,7 @@ def servicefp():
 # Set Test Number
 def settestnum():
     global test
+    print "Current test # is: ", test
     print "Enter Test Number"
     testnum=raw_input("test: ")
     if not testnum:
@@ -300,10 +301,12 @@ def settestnum():
 # Set systen name
 def setsysname():
     global system
-    print "Enter System Name"
+    print "Current System Name: ", system
+    print "Enter New System Name or Q to keep"
     name=raw_input("Name: ")
-    if not name:
-        raise ValueError('empty string')
+    if name == "Q":
+        print "Keeping current name"
+        return
     system = name
     print "Test Number set at: ", system
     return(system)
@@ -328,7 +331,6 @@ def runsparse():
     print "2. Boolean"
     print "3. File Context"
     print "4. Back to Main"
-    runanswer=raw_input("Y or N: ")
     while True:
         sel=raw_input("Selection: ")
         if sel == "1":
@@ -345,16 +347,48 @@ def runsparse():
             break 
     return
 
+
+# ################################################################
+# Search Relationships
+# example seach with like db.booleans.find({Domain: /ftp/},{})
+# example exact search db.booleans.find({Domain: "ftpd_t"},{})
+    #client = MongoClient('localhost', 27017)
+    #db = client.service
+def searchrel():
+    client = MongoClient('localhost', 27017)
+    print "Enter domain to search on"
+    dsel = raw_input("Domain: ")
+    dom = "/"+dsel+"/"
+    searchin = '{Domain: '+dom+'}'+',{}'
+    print "Search String: ", searchin
+    db = client.service
+    serviceres1 = list(db.service.find({'Domain': 'crond_t'}))
+    print "Found: ", serviceres1
+    #serviceres = list(db.service.find(searchin))
+    #db = client.boolean
+    #boolres = list(db.boolean.find(searchin))
+    #db = client.fcontext
+    #contextres = list(db.fcontext.find(searchin))
+    #print "Services:"
+    #print serviceres
+    #print "Booleans:"
+    #print boolres
+    #print "File Contexts:"
+    #print contextres
+    return ()
+
+
+
 # ################################################################
 # Main menu
     #print "Main Menu"
     #print "1. Enter Test #"
     #print "2. Enter System name"
     #print "3. Run Collect Scripts"
-    #print "4. Run parsing (boolens, service and context) sub-menu this? or add more to main?"
+    #print "4. Run parsing (boolens, service and context) sub-menu "
     #print "5. Run / view finger prints"
     #print "6. View Diffs"
-    #print "7. View Relationships"
+    #print "7. Search / View Relationships"
     #print "8. misc"
     #print "9. Exit"
 # ################################################################
@@ -373,7 +407,7 @@ def main():
             runscripts()
             continue
         elif sel == "4":
-            print "Run Parsing"
+            runsparse()
             continue 
         elif sel == "5":
             print "Run FPs"
@@ -382,7 +416,7 @@ def main():
             print "View Diffs"
             continue       
         elif sel == "7":
-            print "View Rels"
+            searchrel()
             continue             
         elif sel == "8":
             print "View FPs"
