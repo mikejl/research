@@ -50,6 +50,7 @@ def printmm():
 def collect(runanswer):
         if runanswer == "Y":
                 print "Running collection scripts"
+                # look at Popen ( with vars for systemnaem and test #)
                 subprocess.call(['sudo /home/mike/research/code/boolean_collect.sh local'], shell=True)
                 subprocess.call(['sudo /home/mike/research/code/fcontext_collect.sh local'], shell=True)
                 subprocess.call(['sudo /home/mike/research/code/service_collect.sh local'], shell=True)
@@ -275,7 +276,7 @@ def servicefp():
     print "Item Count: ", db.service.find().count()
     print "***************************************************"
 
-    # Export to CSV    
+    # Export to CSV ##TODO add results to a system table   
     subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)  
     return        
                 
@@ -286,6 +287,7 @@ def servicefp():
 # ################################################################
 # Set Test Number
 def settestnum():
+    global test
     print "Enter Test Number"
     testnum=raw_input("test: ")
     if not testnum:
@@ -293,6 +295,19 @@ def settestnum():
     test = testnum
     print "Test Number set at: ", test
     return(test)
+
+# ################################################################
+# Set systen name
+def setsysname():
+    global system
+    print "Enter System Name"
+    name=raw_input("Name: ")
+    if not name:
+        raise ValueError('empty string')
+    system = name
+    print "Test Number set at: ", system
+    return(system)
+
 
 # ################################################################
 # Run collect scripts
@@ -306,12 +321,37 @@ def runscripts():
 
 
 # ################################################################
+# Run parsing 
+def runsparse():
+    print "Select Parse to Run"
+    print "1. Service"
+    print "2. Boolean"
+    print "3. File Context"
+    print "4. Back to Main"
+    runanswer=raw_input("Y or N: ")
+    while True:
+        sel=raw_input("Selection: ")
+        if sel == "1":
+            serviceparse()
+            continue
+        elif sel == "2":
+            booleanparse()
+            continue
+        elif sel == "3":
+            fcontextpase()
+            continue
+        elif sel == "4":
+            print "Bye"
+            break 
+    return
+
+# ################################################################
 # Main menu
     #print "Main Menu"
     #print "1. Enter Test #"
     #print "2. Enter System name"
     #print "3. Run Collect Scripts"
-    #print "4. Run parsing (boolens, service and context)"
+    #print "4. Run parsing (boolens, service and context) sub-menu this? or add more to main?"
     #print "5. Run / view finger prints"
     #print "6. View Diffs"
     #print "7. View Relationships"
@@ -327,7 +367,7 @@ def main():
             settestnum()
             continue
         elif sel == "2":
-            print "Enter System Name menu"
+            setsysname()
             continue
         elif sel == "3":
             runscripts()
