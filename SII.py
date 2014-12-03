@@ -21,32 +21,35 @@ from pymongo import MongoClient
 # ################################################################
 # Set Initial Gloval vars
 # ################################################################
-system = "localhost"    # set per test1 / base 1, etc
-test = 0                # set to 0 initally 
-ip = "local"            # local only for all tests
-client = MongoClient('localhost', 27017)
+system = "localhost"                    # set to localhost initally
+test = 0                                # set to 0 initally 
+ip = "local"                            # set to local initally
+client = MongoClient('localhost', 27017) #Local MongoDB
 
 # ################################################################
 # Functions
 # ################################################################
 
+# ################################################################
 # Main menu Print
+# ################################################################
 def printmm():
     print "Main Menu"
     print "1. Enter Test #"
-    print "2. Enter System name"
+    print "2. Enter System Name"
     print "3. Run Collect Scripts"
-    print "4. Run parsing (boolens, service and context)"
-    print "5. Run / view finger prints"
+    print "4. Run Parsing (boolens, service and context)"
+    print "5. Run / View Finger Prints"
     print "6. View Diffs"
     print "7. Search / View Relationships"
-    print "8. misc"
+    print "8. Misc"
     print "9. Exit"
     print "-------------------------"
     return
 
 # ################################################################
 # Collect raw data 
+# ################################################################
 def collect(runanswer):
         if runanswer == "Y":
                 print "Running collection scripts"
@@ -61,7 +64,8 @@ def collect(runanswer):
         return
 
 # ################################################################
-## Hash Function
+# Hash Function
+# ################################################################
 def tohash(*hashstring):
         htuple = [''.join(x) for x in hashstring]
         htuple2 = ''.join(htuple)
@@ -211,7 +215,8 @@ def serviceparse():
 # ################################################################
 
 # ################################################################
-## MongoDB booleans collection
+# MongoDB booleans collection
+# ################################################################
 def boolsfp():
     client = MongoClient('localhost', 27017)
     db = client.booleans
@@ -234,7 +239,8 @@ def boolsfp():
     return
     
 # ################################################################
-## MongoDB fContext collection
+# fContext collection
+# ################################################################
 def fcontextfp():
     client = MongoClient('localhost', 27017)
     db = client.fcontext
@@ -257,7 +263,8 @@ def fcontextfp():
     return
     
 # ################################################################
-## MongoDB service collection
+# service collection
+# ################################################################
 def servicefp():
     client = MongoClient('localhost', 27017)
     db = client.service
@@ -281,11 +288,13 @@ def servicefp():
     return        
                 
 # ################################################################
-##TODO
+# TODO
+# ################################################################
 # Make a tuple in a system table to have system, date/time, test#, pfp, cfp and sfp 
 
 # ################################################################
 # Set Test Number
+# ################################################################
 def settestnum():
     global test
     print "Current test # is: ", test
@@ -299,6 +308,7 @@ def settestnum():
 
 # ################################################################
 # Set systen name
+# ################################################################
 def setsysname():
     global system
     print "Current System Name: ", system
@@ -314,6 +324,7 @@ def setsysname():
 
 # ################################################################
 # Run collect scripts
+# ################################################################
 def runscripts():
     print "Run input scripts"
     runanswer=raw_input("Y or N: ")
@@ -325,6 +336,7 @@ def runscripts():
 
 # ################################################################
 # Run parsing 
+# ################################################################
 def runsparse():
     print "Select Parse to Run"
     print "1. Service"
@@ -350,6 +362,7 @@ def runsparse():
 
 # ################################################################
 # Search Relationships
+# ################################################################
 # example seach with like db.booleans.find({Domain: /ftp/},{})
 # example exact search db.booleans.find({Domain: "ftpd_t"},{})
     #client = MongoClient('localhost', 27017)
@@ -381,7 +394,7 @@ def searchrel():
 
 # ################################################################
 # Main menu
-    #print "Main Menu"
+# ################################################################
     #print "1. Enter Test #"
     #print "2. Enter System name"
     #print "3. Run Collect Scripts"
@@ -397,42 +410,44 @@ def main():
     while True:
         printmm()
         sel=raw_input("Selection: ")
-        if sel == "1":
+        sel = int(sel)
+        if sel == 1:
             settestnum()
             continue
-        elif sel == "2":
+        elif sel == 2:
             setsysname()
             continue
-        elif sel == "3":
+        elif sel == 3:
             runscripts()
             continue
-        elif sel == "4":
+        elif sel == 4:
             runsparse()
             continue 
-        elif sel == "5":
+        elif sel == 5:
             print "Run FPs"
             continue    
-        elif sel == "6":
+        elif sel == 6:
             print "View Diffs"
             continue       
-        elif sel == "7":
+        elif sel == 7:
             searchrel()
             continue             
-        elif sel == "8":
+        elif sel == 8:
             print "View FPs"
             continue        
-        elif sel == "9":
+        elif sel == 9:
             print "Bye"
             break
         else:
-            print "bad entry"
-            break
+            print "bad entry .. try agin"
+            continue
 
-
+# ################################################################
+# MAIN
+# ################################################################
 if __name__ == "__main__":
     main()
 
-
-
-
-
+# ################################################################
+# END OF CODE
+# ################################################################
