@@ -363,36 +363,36 @@ def runsparse():
 # ################################################################
 # Search Relationships
 # ################################################################
-# example seach with like db.booleans.find({Domain: /ftp/},{})
-# example exact search db.booleans.find({Domain: "ftpd_t"},{})
-    #client = MongoClient('localhost', 27017)
-    #db = client.service
+# Pull select fields from db, use python to search / sort data
+## INWORK
+
 def searchrel():
     client = MongoClient('localhost', 27017)
-    print "Enter domain to search on"
-    dsel = raw_input("Domain: ")
-    #dom = "{'$regex':" + "u" + "'" + dsel + "'" + "}"
-    #print dom
-    #searchin = '{"Domain": '+dom+'}'+',{"Service":1 ,"Domain":1,"Context":1,"_id":0}'
-    #print "Search String: ", searchin
+    print "Enter domain to search for"
+    dsel = raw_input("Domain: ")  
     # Service
     db = client.service
-    #serviceres1 = list(db.service.find({'"Domain" :' +dom+'}' +','+'{"Service":1 ,"Domain":1,"Context":1,"_id":0'}))
-    serviceres1 = list(db.service.find({"Domain": dsel},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
-    #serviceres1 = list(db.service.find({"Domain": {'$regex': u'ssh'}},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
-    print "Found: ", serviceres1
-    #serviceres = list(db.service.find(searchin))
-    #db = client.boolean
-    #boolres = list(db.boolean.find(searchin))
-    #db = client.fcontext
-    #contextres = list(db.fcontext.find(searchin))
-    #print "Services:"
-    #print serviceres
-    #print "Booleans:"
-    #print boolres
-    #print "File Contexts:"
-    #print contextres
-    return ()
+    serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0})) 
+    # Poicy
+    db = client.boolean
+    boolres = list(db.boolean.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))  
+    # File Context
+    db = client.fcontext
+    contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
+    #Print
+    print "Services:" 
+    svc_matches = [svc for svc in serviceres if dsel in str(svc)] 
+    print svc_matches
+    print "---------------------"
+    print "Booleans:"
+    bol_matches = [bol for bol in boolres if dsel in str(bol)]
+    print bol_matches
+    print "---------------------"
+    print "File Contexts:"
+    fc_matches = [fc for fc in contextres if dsel in str(fc)]
+    print fc_matches
+    print "---------------------"
+    return
 
 
 
