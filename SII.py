@@ -371,11 +371,15 @@ def searchrel():
     client = MongoClient('localhost', 27017)
     print "Enter domain to search on"
     dsel = raw_input("Domain: ")
-    dom = "/"+dsel+"/"
-    searchin = '{Domain: '+dom+'}'+',{}'
-    print "Search String: ", searchin
+    #dom = "{'$regex':" + "u" + "'" + dsel + "'" + "}"
+    #print dom
+    #searchin = '{"Domain": '+dom+'}'+',{"Service":1 ,"Domain":1,"Context":1,"_id":0}'
+    #print "Search String: ", searchin
+    # Service
     db = client.service
-    serviceres1 = list(db.service.find({'Domain': 'crond_t'}))
+    #serviceres1 = list(db.service.find({'"Domain" :' +dom+'}' +','+'{"Service":1 ,"Domain":1,"Context":1,"_id":0'}))
+    serviceres1 = list(db.service.find({"Domain": dsel},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
+    #serviceres1 = list(db.service.find({"Domain": {'$regex': u'ssh'}},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
     print "Found: ", serviceres1
     #serviceres = list(db.service.find(searchin))
     #db = client.boolean
@@ -409,8 +413,14 @@ def searchrel():
 def main():
     while True:
         printmm()
-        sel=raw_input("Selection: ")
-        sel = int(sel)
+        #sel=raw_input("Selection: ")
+        is_valid=0
+        while not is_valid :
+            try :
+                sel = int ( raw_input('Enter your choice [1-9] : ') )
+                is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+            except ValueError, e :
+                print ("'%s' is not a valid integer." % e.args[0].split(": ")[1])
         if sel == 1:
             settestnum()
             continue
