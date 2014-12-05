@@ -374,23 +374,26 @@ def searchrel():
     db = client.service
     serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0})) 
     # Poicy
-    db = client.boolean
-    boolres = list(db.boolean.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))  
+    db = client.booleans
+    boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))  
     # File Context
     db = client.fcontext
     contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
     #Print
     print "Services:" 
-    svc_matches = [svc for svc in serviceres if dsel in str(svc)] 
-    print svc_matches
+    svc_matches = [svc for svc in serviceres if dsel in str(svc['Domain'])]
+    for item in svc_matches:
+        print item
     print "---------------------"
     print "Booleans:"
-    bol_matches = [bol for bol in boolres if dsel in str(bol)]
-    print bol_matches
+    bol_matches = [bol for bol in boolres if dsel in str(bol['Domain'])]
+    for item in bol_matches:
+        print item
     print "---------------------"
     print "File Contexts:"
-    fc_matches = [fc for fc in contextres if dsel in str(fc)]
-    print fc_matches
+    fc_matches = [fc for fc in contextres if dsel in str(fc['Domain'])]
+    for item in fc_matches:
+        print item
     print "---------------------"
     return
 
