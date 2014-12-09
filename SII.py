@@ -7,46 +7,63 @@
 # ################################################################
 # Load environmental items
 # ################################################################
-#import sys 
 import md5
-#import csv
 import os
-#import pymongo
-#import json
 import datetime
 import subprocess
 from pymongo import MongoClient
-#from subprocess import call
 
 # ################################################################
 # Set Initial Gloval vars
 # ################################################################
-system = "localhost"    # set per test1 / base 1, etc
-test = 0                # set to 0 initally 
-ip = "local"            # local only for all tests
-client = MongoClient('localhost', 27017)
+system = "localhost"                       # set to localhost initally
+testnum = 0                                # set to 0 initally 
+ip = "local"                               # set to local initally
+client = MongoClient('localhost', 27017)   #Local MongoDB
+sfp = 0
+cfp = 0
+pfp = 0
+
 
 # ################################################################
 # Functions
 # ################################################################
 
+# ################################################################
 # Main menu Print
+# ################################################################
 def printmm():
+    print "Current Test#: ", testnum, "Test System: ", system
+    print  "-------------------------------------------------"
     print "Main Menu"
     print "1. Enter Test #"
-    print "2. Enter System name"
+    print "2. Enter System Name"
     print "3. Run Collect Scripts"
-    print "4. Run parsing (boolens, service and context)"
-    print "5. Run / view finger prints"
+    print "4. Run Parsing (boolens, service and context)"
+    print "5. Run / View Finger Prints"
     print "6. View Diffs"
     print "7. Search / View Relationships"
-    print "8. misc"
+    print "8. Misc"
     print "9. Exit"
     print "-------------------------"
     return
 
 # ################################################################
+# Fingerprint sub menu
+# ################################################################
+def printfbsub():
+    print "Fingerprint menu"
+    print "1 = Policy Finger Print"
+    print "2 = FContext Finger Print"
+    print "3 = Service Finger Print"
+    print "4 = Save Results to dB"
+    print "5 = Retuen to Main Menu"
+    print "-------------------------"
+    return
+
+# ################################################################
 # Collect raw data 
+# ################################################################
 def collect(runanswer):
         if runanswer == "Y":
                 print "Running collection scripts"
@@ -61,7 +78,8 @@ def collect(runanswer):
         return
 
 # ################################################################
-## Hash Function
+# Hash Function
+# ################################################################
 def tohash(*hashstring):
         htuple = [''.join(x) for x in hashstring]
         htuple2 = ''.join(htuple)
@@ -86,7 +104,7 @@ def booleanparse():
         ## Parse the boolean.txt
         fields1 = text.split()
         fields2 = text.split(')', 1)
-        fields3 = text.split(',', 1)
+        #fields3 = text.split(',', 1)
         fields4 = text.rsplit('(')
         defaultb = fields4[1].split(',', 1)
         stateb = fields4[1].split(',', 1)
@@ -102,7 +120,7 @@ def booleanparse():
         Hash = md5.new(tohash).hexdigest()
         ## Input into mongodb boolean collection 
         ## Mongo insert with date/time stamp 
-        docinsert = {"Sys": system, "testnum": test, "Boolean": Boolean, "Description": Description,"Default": Default,"State": State, "Hash": Hash, "Domain": Domain, "date": datetime.datetime.utcnow()}
+        docinsert = {"Sys": system, "testnum": testnum, "Boolean": Boolean, "Description": Description,"Default": Default,"State": State, "Hash": Hash, "Domain": Domain, "date": datetime.datetime.utcnow()}
         db.booleans.insert(docinsert)
 
 
@@ -147,7 +165,7 @@ def fcontextpase():
     # Hash function
     tohash = fpath+ftype+fcontext
     Hash = md5.new(tohash).hexdigest()
-    docinsert = {"Sys": system, "testnum": test, "Path": fpath, "Type": ftype, "Domain": domain, "Context": fcontext, "Hash": Hash, "date": datetime.datetime.utcnow()}
+    docinsert = {"Sys": system, "testnum": testnum, "Path": fpath, "Type": ftype, "Domain": domain, "Context": fcontext, "Hash": Hash, "date": datetime.datetime.utcnow()}
     db.fcontext.insert(docinsert)
     
     ## Query db collection and mongoexport the collection to csv    
@@ -196,7 +214,7 @@ def serviceparse():
     #Hash function
     tohash = service+sdomain+Context
     Hash = md5.new(tohash).hexdigest()
-    docinsert = {"Sys": system, "testnum": test, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
+    docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
     #print docinsert
     db.service.insert(docinsert)
 
@@ -211,11 +229,12 @@ def serviceparse():
 # ################################################################
 
 # ################################################################
-## MongoDB booleans collection
+# MongoDB booleans collection
+# ################################################################
 def boolsfp():
     client = MongoClient('localhost', 27017)
     db = client.booleans
-
+    global pfp
     hash1 = ""
     hash2 = ""
 
@@ -229,16 +248,21 @@ def boolsfp():
     print "Policy Finger Print: ", pfp
     print "Item Count: ", db.booleans.find().count()
     print "***************************************************"
-    # Export to CSV    
-    subprocess.call(['mongoexport --host localhost -d boolean -c boolean --csv -f "Hash" > /home/mike/research/p-hlist.txt'], shell=True)  
+    print "Export to CSV?"
+    exportYN=raw_input("Y/N: ")
+    if exportYN == "Y":
+        print "Exporting..."
+        subprocess.call(['mongoexport --host localhost -d boolean -c boolean --csv -f "Hash" > /home/mike/research/p-hlist.txt'], shell=True)
+    printfbsub()  
     return
     
 # ################################################################
-## MongoDB fContext collection
+# fContext collection
+# ################################################################
 def fcontextfp():
     client = MongoClient('localhost', 27017)
     db = client.fcontext
-
+    global cfp
     hash1 = ""
     hash2 = ""
 
@@ -251,17 +275,21 @@ def fcontextfp():
     print "FContext Finger Print: ", cfp
     print "Item Count: ", db.fcontext.find().count()
     print "***************************************************"
-
-    # Export to CSV    
-    subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)  
+    print "Export to CSV?"
+    exportYN=raw_input("Y/N: ")
+    if exportYN == "Y":
+        print "Exporting..."
+        subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)
+    printfbsub()  
     return
     
 # ################################################################
-## MongoDB service collection
+# service collection
+# ################################################################
 def servicefp():
     client = MongoClient('localhost', 27017)
     db = client.service
-
+    global sfp
     hash1 = ""
     hash2 = ""
 
@@ -275,30 +303,78 @@ def servicefp():
     print "Service Finger Print: ", sfp
     print "Item Count: ", db.service.find().count()
     print "***************************************************"
-
-    # Export to CSV ##TODO add results to a system table   
-    subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)  
+    print "Export to CSV?"
+    exportYN=raw_input("Y/N: ")
+    if exportYN == "Y":
+        print "Exporting..."
+        subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Hash" > /home/mike/research/svc-hlist.txt'], shell=True)
+    printfbsub()
     return        
                 
 # ################################################################
-##TODO
-# Make a tuple in a system table to have system, date/time, test#, pfp, cfp and sfp 
+# Save data to results table
+# ################################################################
+def saveres():
+    client = MongoClient('localhost', 27017)
+    db = client.results
+    print "Enter test results for: ", system, "Test: ", testnum
+    print "Current FPs.  ServiceFP:",sfp," PolicyFP:",pfp," ContextFP:",cfp
+    dbYN=raw_input("Y/N: ")
+    if dbYN == "Y":
+        docinsert = {"Sys": system, "testnum": testnum, "serviceFP": sfp, "booleanFP": pfp, "contextFP": cfp, "date": datetime.datetime.utcnow()}
+        print "Saving...", docinsert
+        db.results.insert(docinsert)
+    printfbsub()
+    return    
+
+# ################################################################
+# Fingerprint submenu
+# ################################################################
+def fpsub():
+    #os.system('clear')
+    printfbsub()
+    while True:
+        is_valid=0
+        while not is_valid :
+            try :
+                sel = int ( raw_input('Enter your choice [1-5] : ') )
+                is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+            except ValueError, e :
+                print ("'%s' is not a valid integer." % e.args[0].split(": ")[1])
+        if sel == 1:
+            boolsfp()
+            continue
+        if sel == 2:
+            fcontextfp()
+            continue
+        if sel == 3:
+            servicefp()
+            continue
+        if sel == 4:
+            saveres()
+        elif sel == 5:
+            return()
+    return()
+    
+
 
 # ################################################################
 # Set Test Number
+# ################################################################
 def settestnum():
-    global test
-    print "Current test # is: ", test
+    global testnum
+    print "Current test # is: ", testnum
     print "Enter Test Number"
     testnum=raw_input("test: ")
     if not testnum:
         raise ValueError('empty string')
-    test = testnum
-    print "Test Number set at: ", test
-    return(test)
+    testnum = testnum
+    print "Test Number set at: ", testnum
+    return(testnum)
 
 # ################################################################
 # Set systen name
+# ################################################################
 def setsysname():
     global system
     print "Current System Name: ", system
@@ -308,12 +384,13 @@ def setsysname():
         print "Keeping current name"
         return
     system = name
-    print "Test Number set at: ", system
+    print "Test system name set at: ", system
     return(system)
 
 
 # ################################################################
 # Run collect scripts
+# ################################################################
 def runscripts():
     print "Run input scripts"
     runanswer=raw_input("Y or N: ")
@@ -325,6 +402,7 @@ def runscripts():
 
 # ################################################################
 # Run parsing 
+# ################################################################
 def runsparse():
     print "Select Parse to Run"
     print "1. Service"
@@ -350,38 +428,46 @@ def runsparse():
 
 # ################################################################
 # Search Relationships
-# example seach with like db.booleans.find({Domain: /ftp/},{})
-# example exact search db.booleans.find({Domain: "ftpd_t"},{})
-    #client = MongoClient('localhost', 27017)
-    #db = client.service
+# ################################################################
+# Pull select fields from db, use python to search / sort data
+## INWORK
+
 def searchrel():
     client = MongoClient('localhost', 27017)
-    print "Enter domain to search on"
-    dsel = raw_input("Domain: ")
-    dom = "/"+dsel+"/"
-    searchin = '{Domain: '+dom+'}'+',{}'
-    print "Search String: ", searchin
+    print "Enter domain to search for"
+    dsel = raw_input("Domain: ")  
+    # Service
     db = client.service
-    serviceres1 = list(db.service.find({'Domain': 'crond_t'}))
-    print "Found: ", serviceres1
-    #serviceres = list(db.service.find(searchin))
-    #db = client.boolean
-    #boolres = list(db.boolean.find(searchin))
-    #db = client.fcontext
-    #contextres = list(db.fcontext.find(searchin))
-    #print "Services:"
-    #print serviceres
-    #print "Booleans:"
-    #print boolres
-    #print "File Contexts:"
-    #print contextres
-    return ()
+    serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0})) 
+    # Poicy
+    db = client.booleans
+    boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))  
+    # File Context
+    db = client.fcontext
+    contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
+    #Print
+    print "Services:" 
+    svc_matches = [svc for svc in serviceres if dsel in str(svc['Domain'])]
+    for item in svc_matches:
+        print item
+    print "---------------------"
+    print "Booleans:"
+    bol_matches = [bol for bol in boolres if dsel in str(bol['Domain'])]
+    for item in bol_matches:
+        print item
+    print "---------------------"
+    print "File Contexts:"
+    fc_matches = [fc for fc in contextres if dsel in str(fc['Domain'])]
+    for item in fc_matches:
+        print item
+    print "---------------------"
+    return
 
 
 
 # ################################################################
 # Main menu
-    #print "Main Menu"
+# ################################################################
     #print "1. Enter Test #"
     #print "2. Enter System name"
     #print "3. Run Collect Scripts"
@@ -396,43 +482,50 @@ def searchrel():
 def main():
     while True:
         printmm()
-        sel=raw_input("Selection: ")
-        if sel == "1":
+        is_valid=0
+        while not is_valid :
+            try :
+                sel = int ( raw_input('Enter your choice [1-9] : ') )
+                is_valid = 1 ## set it to 1 to validate input and to terminate the while..not loop
+            except ValueError, e :
+                print ("'%s' is not a valid integer." % e.args[0].split(": ")[1])
+        if sel == 1:
             settestnum()
             continue
-        elif sel == "2":
+        elif sel == 2:
             setsysname()
             continue
-        elif sel == "3":
+        elif sel == 3:
             runscripts()
             continue
-        elif sel == "4":
+        elif sel == 4:
             runsparse()
             continue 
-        elif sel == "5":
-            print "Run FPs"
+        elif sel == 5:
+            fpsub()
             continue    
-        elif sel == "6":
-            print "View Diffs"
+        elif sel == 6:
+            print "View Diffs TODO"
             continue       
-        elif sel == "7":
+        elif sel == 7:
             searchrel()
             continue             
-        elif sel == "8":
-            print "View FPs"
+        elif sel == 8:
+            print "misc sub menu TODO"
             continue        
-        elif sel == "9":
+        elif sel == 9:
             print "Bye"
             break
         else:
-            print "bad entry"
-            break
+            print "bad entry .. try agin"
+            continue
 
-
+# ################################################################
+# MAIN
+# ################################################################
 if __name__ == "__main__":
     main()
 
-
-
-
-
+# ################################################################
+# END OF CODE
+# ################################################################
