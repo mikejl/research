@@ -12,6 +12,8 @@ import os
 import datetime
 import subprocess
 from pymongo import MongoClient
+import timeit
+#import cProfile
 
 # ################################################################
 # Set Initial Gloval vars
@@ -57,7 +59,7 @@ def printfbsub():
     print "2 = FContext Finger Print"
     print "3 = Service Finger Print"
     print "4 = Save Results to dB"
-    print "5 = Retuen to Main Menu"
+    print "5 = Return to Main Menu"
     print "-------------------------"
     return
 
@@ -237,7 +239,7 @@ def boolsfp():
     global pfp
     hash1 = ""
     hash2 = ""
-
+    
     for item in db.booleans.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
@@ -342,6 +344,8 @@ def fpsub():
             except ValueError, e :
                 print ("'%s' is not a valid integer." % e.args[0].split(": ")[1])
         if sel == 1:
+            #cProfile.run('boolsfp()')
+            #timeit.timeit(boolsfp)
             boolsfp()
             continue
         if sel == 2:
