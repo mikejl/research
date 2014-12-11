@@ -1,8 +1,9 @@
 # ################################################################
 # SELinux Integrity Instrumentation
-# Mike Libassi
+# Mike Libassi 
 # 2014/15
-####################################################################
+# Code source: https://github.com/mikejl/research
+#################################################################
 
 # ################################################################
 # Load environmental items
@@ -12,14 +13,16 @@ import os
 import datetime
 import subprocess
 from pymongo import MongoClient
+import timeit
+import cProfile, pstats, StringIO
 
 # ################################################################
-# Set Initial Gloval vars
+# Set Initial  Vars
 # ################################################################
-system = "localhost"                       # set to localhost initally
-testnum = 0                                # set to 0 initally 
-ip = "local"                               # set to local initally
-client = MongoClient('localhost', 27017)   #Local MongoDB
+system = "localhost"                       
+testnum = 0                                
+ip = "local"                               
+client = MongoClient('localhost', 27017)   
 sfp = 0
 cfp = 0
 pfp = 0
@@ -57,7 +60,7 @@ def printfbsub():
     print "2 = FContext Finger Print"
     print "3 = Service Finger Print"
     print "4 = Save Results to dB"
-    print "5 = Retuen to Main Menu"
+    print "5 = Return to Main Menu"
     print "-------------------------"
     return
 
@@ -67,7 +70,7 @@ def printfbsub():
 def collect(runanswer):
         if runanswer == "Y":
                 print "Running collection scripts"
-                # look at Popen ( with vars for systemnaem and test #)
+                #TODO -  look at Popen ( with vars for systemnaem and test #)
                 subprocess.call(['sudo /home/mike/research/code/boolean_collect.sh local'], shell=True)
                 subprocess.call(['sudo /home/mike/research/code/fcontext_collect.sh local'], shell=True)
                 subprocess.call(['sudo /home/mike/research/code/service_collect.sh local'], shell=True)
@@ -78,12 +81,12 @@ def collect(runanswer):
         return
 
 # ################################################################
-# Hash Function
+# Hash Function - not using .. needs extra tuple joins 
 # ################################################################
-def tohash(*hashstring):
-        htuple = [''.join(x) for x in hashstring]
-        htuple2 = ''.join(htuple)
-        return(md5.new(htuple2).hexdigest())
+#def tohash(*hashstring):
+#        htuple = [''.join(x) for x in hashstring]
+#        htuple2 = ''.join(htuple)
+#        return(md5.new(htuple2).hexdigest())
 
 # ################################################################
 # Boolean Parse and Load
@@ -116,7 +119,7 @@ def booleanparse():
         domain1 = open(os.path.join(dir_name, base_filename + filename_suffix), 'r')
         Domain = domain1.read().strip()
         tohash = Boolean+Default+State+Domain
-        # Send tohas to a hash function return hash values
+        #TODO - perf
         Hash = md5.new(tohash).hexdigest()
         ## Input into mongodb boolean collection 
         ## Mongo insert with date/time stamp 
@@ -162,7 +165,7 @@ def fcontextpase():
         fcontext = ftype2
         dfield = fcontext.split(":")
         domain = dfield[2]
-    # Hash function
+    #TODO - perf
     tohash = fpath+ftype+fcontext
     Hash = md5.new(tohash).hexdigest()
     docinsert = {"Sys": system, "testnum": testnum, "Path": fpath, "Type": ftype, "Domain": domain, "Context": fcontext, "Hash": Hash, "date": datetime.datetime.utcnow()}
@@ -211,7 +214,7 @@ def serviceparse():
     else:
         sdomain = "<<none>>"
     service = dfile2[0]
-    #Hash function
+    #TODO - perf
     tohash = service+sdomain+Context
     Hash = md5.new(tohash).hexdigest()
     docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
@@ -225,7 +228,8 @@ def serviceparse():
 
     
 # ################################################################
-# # Build finderprints of service, policy and context            #
+#  Build finderprints of service, policy and context
+#
 # ################################################################
 
 # ################################################################
@@ -237,13 +241,25 @@ def boolsfp():
     global pfp
     hash1 = ""
     hash2 = ""
-
+    ## perf wrapper start ##
+    pr = cProfile.Profile()
+    pr.enable()  #start
+    
     for item in db.booleans.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
         pfp = md5.new(tohash).hexdigest()
         hash2 = pfp
-
+        
+    pr.disable() #stop5
+    
+    s = StringIO.StringIO()
+    sortby = 'calls'  
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()
+    ## perf wrapper end ##
+    
     print "***************************************************"
     print "Policy Finger Print: ", pfp
     print "Item Count: ", db.booleans.find().count()
@@ -356,8 +372,6 @@ def fpsub():
             return()
     return()
     
-
-
 # ################################################################
 # Set Test Number
 # ################################################################
@@ -387,7 +401,6 @@ def setsysname():
     print "Test system name set at: ", system
     return(system)
 
-
 # ################################################################
 # Run collect scripts
 # ################################################################
@@ -398,7 +411,6 @@ def runscripts():
         raise ValueError('empty string')
     collect(runanswer)
     return
-
 
 # ################################################################
 # Run parsing 
@@ -425,12 +437,11 @@ def runsparse():
             break 
     return
 
-
 # ################################################################
 # Search Relationships
 # ################################################################
 # Pull select fields from db, use python to search / sort data
-## INWORK
+#TODO - pefr on search
 
 def searchrel():
     client = MongoClient('localhost', 27017)
