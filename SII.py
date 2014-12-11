@@ -15,6 +15,7 @@ import subprocess
 from pymongo import MongoClient
 import timeit
 import cProfile, pstats, StringIO
+#from termcolor import colored, cprint
 
 # ################################################################
 # Set Initial  Vars
@@ -36,19 +37,22 @@ pfp = 0
 # Main menu Print
 # ################################################################
 def printmm():
+    print"##############################################"
+    print" SELinux Integrity Instrumentation (SII)                               #"
+    print"##############################################"
     print "Current Test#: ", testnum, "Test System: ", system
-    print  "-------------------------------------------------"
+    print  "--------------------------------------------------------------------------"
     print "Main Menu"
     print "1. Enter Test #"
     print "2. Enter System Name"
     print "3. Run Collect Scripts"
     print "4. Run Parsing (boolens, service and context)"
     print "5. Run / View Finger Prints"
-    print "6. View Diffs"
+    print "6. Search /  View Diffs"
     print "7. Search / View Relationships"
-    print "8. Misc"
+    print "8. Tools and Utilities"
     print "9. Exit"
-    print "-------------------------"
+    print"--------------------------------------------------------------------------"
     return
 
 # ################################################################
@@ -457,24 +461,43 @@ def searchrel():
     db = client.fcontext
     contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
     #Print
+    ts = "\t"
+    sep=ts+"       "+ts
     print "Services:" 
     svc_matches = [svc for svc in serviceres if dsel in str(svc['Domain'])]
     for item in svc_matches:
-        print item
+        print "Service:  ", item['Service'],sep, "Domain: ",item['Domain'], sep,"Context:",item['Context']
     print "---------------------"
     print "Booleans:"
     bol_matches = [bol for bol in boolres if dsel in str(bol['Domain'])]
     for item in bol_matches:
-        print item
+        print "Policy Name:", item['Boolean'],sep,"State:",item['State'],sep,"Default State:",item['Default'],sep,"Desc:",item['Description']
     print "---------------------"
     print "File Contexts:"
     fc_matches = [fc for fc in contextres if dsel in str(fc['Domain'])]
     for item in fc_matches:
-        print item
+        print"File Path:", item['Path'],sep,"Domain:",item['Domain'],sep,"Type:",item['Type'],sep,"Context:",item['Context']
     print "---------------------"
     return
 
+# ################################################################
+#  Diffs Function
+# ################################################################
+#TODO
+def diffs():
+    print "Find and View Diffs TODO"
+    return
+    
 
+# ################################################################
+# Tools - sub menu (put in items like clear db, backup reuslts, etc)
+# ################################################################
+#TODO
+def tools():
+    print "Tools menu - TODO"
+    #ctext = colored('Red Tet', 'red'), colored('Greed Test', 'green')
+    #print ctext
+    return
 
 # ################################################################
 # Main menu
@@ -484,9 +507,9 @@ def searchrel():
     #print "3. Run Collect Scripts"
     #print "4. Run parsing (boolens, service and context) sub-menu "
     #print "5. Run / view finger prints"
-    #print "6. View Diffs"
+    #print "6. Run / View Diffs"
     #print "7. Search / View Relationships"
-    #print "8. misc"
+    #print "8. Tools"
     #print "9. Exit"
 # ################################################################
 
@@ -516,13 +539,13 @@ def main():
             fpsub()
             continue    
         elif sel == 6:
-            print "View Diffs TODO"
+            diffs()
             continue       
         elif sel == 7:
             searchrel()
             continue             
         elif sel == 8:
-            print "misc sub menu TODO"
+            tools()
             continue        
         elif sel == 9:
             print "Bye"
