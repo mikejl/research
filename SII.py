@@ -242,7 +242,6 @@ def serviceparse():
         subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Sys,Service,Domain,Hash,date" > /home/mike/research/data/service.csv'], shell=True)
     print "loaded into service: ", db.service.count()
     return
-
     
 # ################################################################
 #  Build finderprints of service, policy and context
@@ -258,23 +257,26 @@ def boolsfp():
     global pfp
     hash1 = ""
     hash2 = ""
-    # perf wrapper start #
-    pr = cProfile.Profile()
-    pr.enable()  #start
     
+    # perf wrapper start (i)pr where i=function #
+    bpr = cProfile.Profile()
+    bpr.enable()  #start
+
+    # Finger Print Hash Algorithm
     for item in db.booleans.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
         pfp = md5.new(tohash).hexdigest()
         hash2 = pfp
         
-    pr.disable() #stop
-    
+    bpr.disable() #stop
     s = StringIO.StringIO()
     sortby = 'calls'  
-    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps = pstats.Stats(bpr, stream=s).sort_stats(sortby)
     ps.print_stats()
-    print s.getvalue()
+    bfpPerfs = s.getvalue()
+    #ps.dump_stats("bfp.txt") #works however format is not usable
+    # the xxxPerfs is a type <str>
     # perf wrapper end #
     
     print "***************************************************"
@@ -298,12 +300,14 @@ def fcontextfp():
     global cfp
     hash1 = ""
     hash2 = ""
-
+    
+    # Finger Print Hash Algorithm
     for item in db.fcontext.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
         cfp = md5.new(tohash).hexdigest()
         hash2 = cfp
+    
     print "***************************************************"
     print "FContext Finger Print: ", cfp
     print "Item Count: ", db.fcontext.find().count()
@@ -326,6 +330,7 @@ def servicefp():
     hash1 = ""
     hash2 = ""
 
+    # Finger Print Hash Algorithm
     for item in db.service.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
