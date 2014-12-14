@@ -15,6 +15,7 @@ import subprocess
 from pymongo import MongoClient
 import timeit
 import cProfile, StringIO ,pstats
+from tabulate import tabulate
 #from termcolor import colored, cprint
 
 # ################################################################
@@ -469,9 +470,9 @@ def searchrel():
     client = MongoClient('localhost', 27017)
     print "Enter domain to search for"
     dsel = raw_input("Domain: ")  
-    # Service
+    # Service    
     db = client.service
-    serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0})) 
+    serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))    
     # Poicy
     db = client.booleans
     boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))  
@@ -479,23 +480,34 @@ def searchrel():
     db = client.fcontext
     contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
     # Print Results
-    ts = "\t"
-    sep=ts+"       "+ts
-    print "Services:" 
+    #ts = "\t"
+    #sep=ts+"       "+ts
+    print " "
+    print "------------------------------------------------------------------------------------"
+    print "Services:"
+    print "------------------------------------------------------------------------------------"
     svc_matches = [svc for svc in serviceres if dsel in str(svc['Domain'])]
-    for item in svc_matches:
-        print "Service:  ", item['Service'],sep, "Domain: ",item['Domain'], sep,"Context:",item['Context']
-    print "---------------------"
+    print tabulate(svc_matches, headers="keys", tablefmt="pipe")
+    #for item in svc_matches:
+    #    print "Service:  ", item['Service'],sep, "Domain: ",item['Domain'], sep,"Context:",item['Context']
+    print " "
+    print "------------------------------------------------------------------------------------"
     print "Booleans:"
+    print "------------------------------------------------------------------------------------"
     bol_matches = [bol for bol in boolres if dsel in str(bol['Domain'])]
-    for item in bol_matches:
-        print "Policy Name:", item['Boolean'],sep,"State:",item['State'],sep,"Default State:",item['Default'],sep,"Desc:",item['Description']
-    print "---------------------"
+    print tabulate(bol_matches, headers="keys", tablefmt="pipe")
+    #for item in bol_matches:
+    #    print "Policy Name:", item['Boolean'],sep,"State:",item['State'],sep,"Default State:",item['Default'],sep,"Desc:",item['Description']
+    print " "
+    print "------------------------------------------------------------------------------------"
     print "File Contexts:"
+    print "------------------------------------------------------------------------------------"
     fc_matches = [fc for fc in contextres if dsel in str(fc['Domain'])]
-    for item in fc_matches:
-        print"File Path:", item['Path'],sep,"Domain:",item['Domain'],sep,"Type:",item['Type'],sep,"Context:",item['Context']
-    print "---------------------"
+    print tabulate(fc_matches, headers="keys", tablefmt="pipe")
+    #OLD
+    #for item in fc_matches:     
+    #    print "Domain:",item['Domain'],sep,"Type:",item['Type'],sep,"Context:",item['Context'],sep,"File Path:", item['Path']
+    print "------------------------------------------------------------------------------------"
     return
 
 # ################################################################
