@@ -264,6 +264,7 @@ def boolsfp():
     bpr.enable()  #start
 
     # Finger Print Hash Algorithm
+    # sort? db.booleans.find({},{"Hash": 1}).sort(["Boolean"])
     for item in db.booleans.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
