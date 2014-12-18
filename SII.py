@@ -281,6 +281,7 @@ def boolsfp():
     bpr.enable()  #start
 
     # Finger Print Hash Algorithm
+    # sort? db.booleans.find({},{"Hash": 1}).sort(["Boolean"])
     for item in db.booleans.find({},{"Hash": 1}):
         hash1 = item['Hash']
         tohash = hash1+hash2
@@ -486,17 +487,37 @@ def runsparse():
 
 def searchrel():
     client = MongoClient('localhost', 27017)
-    print "Enter domain to search for"
-    dsel = raw_input("Domain: ")  
+
     # Service    
     db = client.service
-    serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))    
+    serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
+    distinctsvc = list(db.service.distinct('Domain'))
     # Poicy
     db = client.booleans
-    boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))  
+    boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))
+    distinctbols = list(db.booleans.distinct('Domain'))
     # File Context
     db = client.fcontext
     contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
+    distinctfc = list(db.fcontext.distinct('Domain'))
+    print "------------------------------------------------------------------------------------"
+    print "Current Domains"
+    print "------------------------------------------------------------------------------------"
+    print "Services Domains Found:"
+    print "_______________________"
+    for item in distinctsvc:
+        print item
+    #print "----------"
+    #print "Booleans:"
+    #for item in distinctbols:
+    #    print item
+    #print "----------"
+    #print "File Context:"
+    #for item in distinctfc:
+    #    print item
+    print "------------------------------------------------------------------------------------"
+    print "Enter domain to search for"
+    dsel = raw_input("Domain: ")      
     # Print Results
     #ts = "\t"
     #sep=ts+"       "+ts
