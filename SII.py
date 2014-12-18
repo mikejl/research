@@ -242,15 +242,22 @@ def serviceparse():
             con = i.split(":")
             Context = i
             sdomain = con[2]
+        #sdomain = "<<none>>"
+        service = dfile2[0]
+        tohash = service+sdomain+Context
+	#TODO = pref
+        Hash = md5.new(tohash).hexdigest()
+        docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
+        db.service.insert(docinsert)
     else:
-        sdomain = "<<none>>"
-    service = dfile2[0]
-    #TODO - perf
-    tohash = service+sdomain+Context
-    Hash = md5.new(tohash).hexdigest()
-    docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
+	print "Done"
+        #sdomain = "<<none>>"
+    #service = dfile2[0]
+    #tohash = service+sdomain+Context
+    #Hash = md5.new(tohash).hexdigest()
+    #docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
     #print docinsert
-    db.service.insert(docinsert)
+    #db.service.insert(docinsert)
 
     # CSV Output
     print "Export dB results?"
