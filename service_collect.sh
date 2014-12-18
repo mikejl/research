@@ -4,7 +4,7 @@
 
 TARGET=$1
 
-cd /home/mike/research/raw
+cd /home/mike
 
 
 if [ ! -d "$TARGET" ]; then

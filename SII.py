@@ -75,11 +75,32 @@ def printfbsub():
 def collect(runanswer):
         if runanswer == "Y":
                 print "Running collection scripts for system:", system, " Test#:", testnum
-                #TODO -  look at Popen ( with vars for systemnaem and test #)
-                #subprocess.call(['sudo /home/mike/research/boolean_collect.sh local'], shell=True)
-                #subprocess.call(['sudo /home/mike/research/fcontext_collect.sh local'], shell=True)
-                #subprocess.call(['sudo /home/mike/research/service_collect.sh local'], shell=True)
-                print "Scripts Ran"
+                # -------------------------------------
+		args = ['sudo', '/home/mike/research/boolean_collect.sh', testnum, 'stdout=None', 'stderr=None']
+		str_args = [ str(x) for x in args ]
+                bstatus = subprocess.call(str_args)
+		if bstatus == 0:
+			print "Boolean Collection Done"
+		else:
+			print "Error in shell script"
+		# -------------------------------------
+		args = ['sudo', '/home/mike/research/fcontext_collect.sh', testnum]
+		str_args = [ str(x) for x in args ]
+                cstatus = subprocess.call(str_args)
+		if cstatus == 0:
+			print "File Context Collection Done"
+		else:
+			print "Error in shell script"
+		# -------------------------------------
+		args = ['sudo', '/home/mike/research/service_collect.sh', testnum]
+		str_args = [ str(x) for x in args ]
+                sstatus = subprocess.call(str_args)
+		if sstatus == 0:
+			print "Service Collection Done"
+		else:
+			print "Error in shell script"
+
+                print "Script Colection Done"
         else:
                 print "Test NOT run"
         # check for success?
@@ -100,11 +121,9 @@ def booleanparse():
     client = MongoClient('localhost', 27017)
     db = client.booleans
 
-    # path .. may hardcode to local
-    path = "/home/mike/research/raw/" + testnum + "/boolean.txt"
-    # path = "/Users/mike/Documents/raw/" + testnum + "/boolean.txt"
-    dir_name='/home/mike/research/raw/'+ testnum + "/"
-    # dir_name='/Users/mike/Documents/raw/'+ testnum + "/"
+    # paths
+    path = "/home/mike/" + str(testnum) + "/boolean.txt"
+    dir_name='/home/mike/'+ str(testnum) + "/"
     base_filename='boolean_file'
     filename_suffix = '.domain'
 
@@ -140,7 +159,7 @@ def booleanparse():
     exportYN=raw_input("Y/N: ")
     if exportYN == "Y":
         print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d booleans -c booleans --csv -f "Boolean,Description,Default,State,Hash,date" > /home/mike/research/data/boolean.csv'], shell=True)
+        subprocess.call(['mongoexport --host localhost -d booleans -c booleans --csv -f "Boolean,Description,Default,State,Hash,date" > /home/mike/boolean.csv'], shell=True)
     return
 
 # ################################################################
@@ -150,8 +169,7 @@ def fcontextpase():
     client = MongoClient('localhost', 27017)
     db = client.fcontext
 
-    path = "/home/mike/research/raw/" + testnum + "/fcontext.txt"
-    #path = "/Users/mike/Documents/raw/" + testnum + "/fcontext.txt"
+    path = "/home/mike/" + str(testnum) + "/fcontext.txt"
 
     for text in open(path, 'r'):
         fields1 = text.split()
@@ -189,7 +207,7 @@ def fcontextpase():
     exportYN=raw_input("Y/N: ")
     if exportYN == "Y":
         print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Path,Type,Context,Hash,date" > /home/mike/research/data/fcontext.csv'], shell=True)
+        subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Path,Type,Context,Hash,date" > /home/mike/fcontext.csv'], shell=True)
     return
 
 # ################################################################
@@ -199,8 +217,8 @@ def serviceparse():
     client = MongoClient('localhost', 27017)
     db = client.service
 
-    path = "/home/mike/research/raw/" + testnum + "/service.running"
-    #path = "/Users/mike/Documents/raw/" + testnum + "/service.running"
+    path = "/home/mike/" + str(testnum) + "/service.running"
+
 
     for service in open(path, 'r'):
         field1 = service.split()
@@ -208,8 +226,7 @@ def serviceparse():
         dfile2 = dfile1.split('.')
         dfile3 = dfile2[0]
         dfile4 = dfile3 + ".info"
-        fpath = "/home/mike/research/raw/" + testnum + "/" + dfile4
-        #fpath = "/Users/mike/Documents/raw/" + testnum + "/" + dfile4
+        fpath = "/home/mike/" + str(testnum) + "/" + dfile4
         if os.path.exists(fpath):
             dfile5 = open(fpath,'r')
             dfile6 = dfile5.read().strip()
@@ -240,7 +257,7 @@ def serviceparse():
     exportYN=raw_input("Y/N: ")
     if exportYN == "Y":
         print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Sys,Service,Domain,Hash,date" > /home/mike/research/data/service.csv'], shell=True)
+        subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Sys,Service,Domain,Hash,date" > /home/mike/service.csv'], shell=True)
     print "loaded into service: ", db.service.count()
     return
     
@@ -432,7 +449,8 @@ def runscripts():
     runanswer=raw_input("Y or N: ")
     if not runanswer:
         raise ValueError('empty string')
-    collect(runanswer)
+    if runanswer == "Y":
+        collect(runanswer)
     return
 
 # ################################################################
