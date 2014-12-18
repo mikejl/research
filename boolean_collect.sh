@@ -4,7 +4,7 @@
 TARGET=$1
 
 #Working Dir
-cd /home/mike/research/raw
+cd /home/mike
 
 if [ ! -d "$TARGET" ]; then
   mkdir $TARGET 
