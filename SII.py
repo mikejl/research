@@ -173,33 +173,45 @@ def fcontextpase():
 
     for text in open(path, 'r'):
         fields1 = text.split()
-        fpath = fields1[0]
-        ftype = fields1[1]
-        ftype2 = fields1[2]
-        if not ":" in ftype2:
-            ftype = ftype+ftype2
-        if "<<None>>" in fields1[2]:
-            fcontext = "<<None>>"
-            domain = "<<None>>"
-        else:
-            fcontext = fields1[3]
+        textlen = len(fields1)
+        if textlen == 3:
+            fpath = fields1[0]
+            ftype = fields1[1]
+            ftype2 = fields1[2]
+            if "<<None>>" in fields1[2]:
+                fcontext = "<<None>>"
+                domain = "<<None>>"
+            else:
+                fcontext = fields1[2]
             if "<<None>>" in fcontext:
                 domain = "<<None>>"
             else:
                 dfield = fcontext.split(":")
                 domain = dfield[2]
-    else:
-        fcontext = ftype2
-        dfield = fcontext.split(":")
-        domain = dfield[2]
-    #TODO - perf
-    tohash = fpath+ftype+fcontext
-    Hash = md5.new(tohash).hexdigest()
-    docinsert = {"Sys": system, "testnum": testnum, "Path": fpath, "Type": ftype, "Domain": domain, "Context": fcontext, "Hash": Hash, "date": datetime.datetime.utcnow()}
-    db.fcontext.insert(docinsert)
+        elif textlen == 4:
+            fpath = fields1[0]
+            ftype = fields1[1]
+            ftype2 = fields1[2]
+            if not ":" in ftype2:
+                ftype = ftype+ftype2
+            if "<<None>>" in fields1[2]:
+                fcontext = "<<None>>"
+                domain = "<<None>>"
+            else:
+                fcontext = fields1[3]
+            if "<<None>>" in fcontext:
+                domain = "<<None>>"
+            else:
+                dfield = fcontext.split(":")
+                domain = dfield[2]
+
+        #TODO - perf
+        tohash = fpath+ftype+fcontext
+        Hash = md5.new(tohash).hexdigest()
+        docinsert = {"Sys": system, "testnum": testnum, "Path": fpath, "Type": ftype, "Domain": domain, "Context": fcontext, "Hash": Hash, "date": datetime.datetime.utcnow()}
+        db.fcontext.insert(docinsert)
     
     # Query db collection and mongoexport the collection to csv    
-    #print list(db.fcontext.find())
     print "loaded into fcontext: ", db.fcontext.count()
     
     # CSV Output
