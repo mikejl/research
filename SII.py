@@ -118,8 +118,13 @@ def collect(runanswer):
 # Boolean Parse and Load
 # ################################################################
 def booleanparse():
+    #client = MongoClient('localhost', 27017)
+    #db = client.booleans
     client = MongoClient('localhost', 27017)
-    db = client.booleans
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)    
 
     # paths
     path = "/home/mike/" + str(testnum) + "/boolean.txt"
@@ -166,8 +171,13 @@ def booleanparse():
 ## File context parse and load
 # ################################################################
 def fcontextpase():
+    #client = MongoClient('localhost', 27017)
+    #db = client.fcontext
     client = MongoClient('localhost', 27017)
-    db = client.fcontext
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)      
 
     path = "/home/mike/" + str(testnum) + "/fcontext.txt"
 
@@ -226,8 +236,13 @@ def fcontextpase():
 # Service data Parse and Load
 # ################################################################
 def serviceparse():
+    #client = MongoClient('localhost', 27017)
+    #db = client.service
     client = MongoClient('localhost', 27017)
-    db = client.service
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)      
 
     path = "/home/mike/" + str(testnum) + "/service.running"
 
@@ -289,8 +304,14 @@ def serviceparse():
 # MongoDB booleans collection
 # ################################################################
 def boolsfp():
+    #client = MongoClient('localhost', 27017)
+    #db = client.booleans
     client = MongoClient('localhost', 27017)
-    db = client.booleans
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)  
+    
     global pfp
     hash1 = ""
     hash2 = ""
@@ -333,8 +354,14 @@ def boolsfp():
 # fContext collection
 # ################################################################
 def fcontextfp():
+    #client = MongoClient('localhost', 27017)
+    #db = client.fcontext
     client = MongoClient('localhost', 27017)
-    db = client.fcontext
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)
+    
     global cfp
     hash1 = ""
     hash2 = ""
@@ -362,8 +389,14 @@ def fcontextfp():
 # service collection
 # ################################################################
 def servicefp():
+    #client = MongoClient('localhost', 27017)
+    #db = client.service
     client = MongoClient('localhost', 27017)
-    db = client.service
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)      
+    
     global sfp
     hash1 = ""
     hash2 = ""
@@ -505,22 +538,27 @@ def runsparse():
 #TODO - pefr on search
 
 def searchrel():
+    #client = MongoClient('localhost', 27017)
     client = MongoClient('localhost', 27017)
+    str(testnum)
+    dbstr = testnum
+    DBNAME = dbstr
+    db = getattr(client,dbstr)      
 
     # Service    
-    db = client.service
+    #db = client.service
     serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
     distinctsvc = list(db.service.distinct('Domain'))
     # Poicy
-    db = client.booleans
+    #db = client.booleans
     boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))
     distinctbols = list(db.booleans.distinct('Domain'))
     # File Context
-    db = client.fcontext
+    #db = client.fcontext
     contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
     distinctfc = list(db.fcontext.distinct('Domain'))
     print "------------------------------------------------------------------------------------"
-    print "Current Domains"
+    print "Current Domains for test: " , testnum
     print "------------------------------------------------------------------------------------"
     print "Services Domains Found:"
     print "_______________________"
