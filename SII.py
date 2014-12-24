@@ -16,7 +16,6 @@ from pymongo import MongoClient
 import timeit
 import cProfile, StringIO ,pstats
 from tabulate import tabulate
-#from termcolor import colored, cprint
 
 # ################################################################
 # Set Initial  Vars
@@ -329,24 +328,28 @@ def boolsfp():
         hash2 = pfp
         
     bpr.disable() #stop
+    boolcount = db.booleans.find().count()
     s = StringIO.StringIO()
     sortby = 'calls'  
     ps = pstats.Stats(bpr, stream=s).sort_stats(sortby)
     ps.print_stats()
     bfpPerfs = s.getvalue()
-    #ps.dump_stats("bfp.txt") #works however format is not usable
-    # the xxxPerfs is a type <str>
-    # perf wrapper end #
-    
     print "***************************************************"
     print "Policy Finger Print: ", pfp
-    print "Item Count: ", db.booleans.find().count()
-    print "***************************************************"
-    print "Export to CSV?"
-    exportYN=raw_input("Y/N: ")
-    if exportYN == "Y":
-        print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d boolean -c boolean --csv -f "Hash" > /home/mike/research/p-hlist.txt'], shell=True)
+    print "Item Count: ", boolcount
+    print "***************************************************"    
+    # Store results to dB ########
+    # note the xxxPerfs is a type <str> 
+    db = client.prefdata
+    print "Store cProfile results to perfdata dB?"
+    YN=raw_input("Y/N: ")
+    if YN == "Y":
+        docinsert = {"Sys": system, "testnum": testnum, "boolscount": boolcount, "boolsfp": bfpPerfs, "date": datetime.datetime.utcnow()}
+        print "Saving..."
+        db.prefdata.insert(docinsert)
+	#ps.dump_stats("boolsfp.profile") #path this if its used
+    # perf wrapper end #
+    
     printfbsub()  
     return
     
@@ -366,6 +369,10 @@ def fcontextfp():
     hash1 = ""
     hash2 = ""
     
+    # perf wrapper start (i)pr where i=function #
+    fcpr = cProfile.Profile()
+    fcpr.enable()  #start    
+    
     # Finger Print Hash Algorithm
     for item in db.fcontext.find({},{"Hash": 1}):
         hash1 = item['Hash']
@@ -373,15 +380,29 @@ def fcontextfp():
         cfp = md5.new(tohash).hexdigest()
         hash2 = cfp
     
+    fcpr.disable() #stop
+    fcontextcount = db.fcontext.find().count()
+    s = StringIO.StringIO()
+    sortby = 'calls'  
+    ps = pstats.Stats(fcpr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    fcfpPerfs = s.getvalue()
     print "***************************************************"
     print "FContext Finger Print: ", cfp
-    print "Item Count: ", db.fcontext.find().count()
-    print "***************************************************"
-    print "Export to CSV?"
-    exportYN=raw_input("Y/N: ")
-    if exportYN == "Y":
-        print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Hash" > /home/mike/research/fc-hlist.txt'], shell=True)
+    print "Item Count: ", fcontextcount
+    print "***************************************************"    
+    # Store results to dB ########
+    # note the xxxPerfs is a type <str> 
+    db = client.prefdata
+    print "Store cProfile results to perfdata dB?"
+    YN=raw_input("Y/N: ")
+    if YN == "Y":
+	docinsert = {"Sys": system, "testnum": testnum, "fccount": fcontextcount, "fcontextfp": fcfpPerfs, "date": datetime.datetime.utcnow()}
+	print "Saving..."
+	db.prefdata.insert(docinsert)
+	#ps.dump_stats("fcontextfp.profile") #path this if its used
+    # perf wrapper end #    
+
     printfbsub()  
     return
     
@@ -400,6 +421,10 @@ def servicefp():
     global sfp
     hash1 = ""
     hash2 = ""
+    
+    # perf wrapper start (i)pr where i=function #
+    spr = cProfile.Profile()
+    spr.enable()  #start    
 
     # Finger Print Hash Algorithm
     for item in db.service.find({},{"Hash": 1}):
@@ -407,16 +432,30 @@ def servicefp():
         tohash = hash1+hash2
         sfp = md5.new(tohash).hexdigest()
         hash2 = sfp
-
+    
+    spr.disable() #stop
+    servicefpcount = db.service.find().count()
+    s = StringIO.StringIO()
+    sortby = 'calls'  
+    ps = pstats.Stats(spr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    sfpPerfs = s.getvalue()
     print "***************************************************"
     print "Service Finger Print: ", sfp
-    print "Item Count: ", db.service.find().count()
-    print "***************************************************"
-    print "Export to CSV?"
-    exportYN=raw_input("Y/N: ")
-    if exportYN == "Y":
-        print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Hash" > /home/mike/research/svc-hlist.txt'], shell=True)
+    print "Item Count: ", servicefpcount
+    print "***************************************************"    
+    # Store results to dB ########
+    # note the xxxPerfs is a type <str> 
+    db = client.prefdata
+    print "Store cProfile results to perfdata dB?"
+    YN=raw_input("Y/N: ")
+    if YN == "Y":
+	docinsert = {"Sys": system, "testnum": testnum, "servicecount": servicefpcount, "servicefp": sfpPerfs, "date": datetime.datetime.utcnow()}
+	print "Saving..."
+	db.prefdata.insert(docinsert)
+	#ps.dump_stats("boolsfp.profile") #path this if its used
+    # perf wrapper end # 
+    
     printfbsub()
     return        
                 
@@ -621,11 +660,24 @@ def diffs():
 #TODO
 def tools():
     print "Tools menu - TODO"
-    #ctext = colored('Red Tet', 'red'), colored('Greed Test', 'green')
-    #print ctext
-    print "1. Backup Results"
-    print "2. Export dB"
+    print "1. Export Results"
+    print "2. Backup full dB"
     print "3. Clear DB!!"
+    print "4. Return to Main"
+    while True:
+        sel=raw_input("Selection: ")
+        if sel == "1":
+            print "TODO .. export"
+            continue
+        elif sel == "2":
+            print "run mongodump -o <hostname>"
+            continue
+        elif sel == "3":
+            print "TODO .. Clear db"
+            continue
+        elif sel == "4":
+            print "..."
+            break     
     return
 
 # ################################################################
