@@ -392,7 +392,12 @@ def fcontextfp():
     print "Item Count: ", fcontextcount
     print "***************************************************"    
     # Store results to dB ########
-    # note the xxxPerfs is a type <str> 
+    # note the xxxPerfs is a type <str>
+    # File Output
+    #prof_output = '/Users/mike/Downloads/fcontextpf.profile'
+    #ps.dump_stats(prof_output) #path this if its used
+    #print "Written output to:", prof_output
+    # DB Input
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
@@ -400,7 +405,6 @@ def fcontextfp():
 	docinsert = {"Sys": system, "testnum": testnum, "fccount": fcontextcount, "fcontextfp": fcfpPerfs, "date": datetime.datetime.utcnow()}
 	print "Saving..."
 	db.prefdata.insert(docinsert)
-	#ps.dump_stats("fcontextfp.profile") #path this if its used
     # perf wrapper end #    
 
     printfbsub()  
