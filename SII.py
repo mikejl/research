@@ -654,7 +654,65 @@ def searchrel():
 # ################################################################
 #TODO
 def diffs():
-    print "Find and View Diffs TODO"
+    # Get test1 and test 2 from input #
+    print "Enter test # for test1"
+    test1 = raw_input("Test1:")      
+    print "Enter test # for test2"
+    test2 = raw_input("Test2:")
+    
+    print "Runing main diffs for finger prints on test:",test1," vs test:",test2
+
+    
+    # Conect to results
+    client = MongoClient('localhost', 27017)
+    db = client.results
+    
+    # Pull testresults data
+    testres = list(db.results.find({},{"testnum":1 ,"contextFP":1,"serviceFP":1,"booleanFP":1, "_id":0}))
+    resSet1 = [res for res in testres if test1 in str(res['testnum'])]
+    resSet2 = [res for res in testres if test2 in str(res['testnum'])]
+    
+    # Main diff between both tests
+    maindiff = cmp(resSet1, resSet2)
+    
+    #Extract fingerprints
+    t1sfp = resSet1[0].get("serviceFP") 
+    t1bfp = resSet1[0].get("booleanFP")  
+    t1cfp = resSet1[0].get("contextFP")
+    t2sfp = resSet2[0].get("serviceFP")
+    t2bfp = resSet2[0].get("booleanFP")
+    t2cfp = resSet2[0].get("contextFP")
+    
+    if maindiff != 0:
+	sfpdiff = cmp(t1sfp,t2sfp)
+	if sfpdiff != 0:
+	    print "SFP DIFF!!"
+	    print "run SPF stack diff"
+	else:
+	    print "No SPF Diff"
+	bfpdiff = cmp(t1bfp,t2bfp)
+	if bfpdiff != 0:
+	    print "BFP DIFF!!"
+	    print "run BPF stack diff"
+	else:
+	    print "No BFP Diff"
+	cfpdiff = cmp(t1cfp,t2cfp)
+	if cfpdiff != 0:
+	    print "CFP DIFF!!"
+	    print "run CFP stack diff"
+	else:
+	    print "No CFP Diff"
+    else:
+	print "No DIFF"
+    print "#####################################################"
+    print "Finger Prints"
+    print "#####################################################"  
+    print "Test 1"
+    print tabulate(resSet1, headers="keys", tablefmt="pipe")
+    print "Test 2"
+    print tabulate(resSet2, headers="keys", tablefmt="pipe")
+    print ""
+    print "#####################################################"
     return
     
 
