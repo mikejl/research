@@ -682,32 +682,106 @@ def stackdiff():
     t2fcStack = list(db.fcontext.find({},{"testnum":1 ,"Sys":1,"Context":1,"Path":1,"Hash":1}).sort("Path"))
     
     #Check for diffs in Service / Policy / File Context
+    # Get count for each stack
+    t1fclength = len(t1fcStack)
+    t2fclength = len(t2fcStack)
+    t1svclength = len(t1svcStack)
+    t2svclength = len(t2svcStack)
+    t1bollength = len(t1bolStack)
+    t2bollength = len(t2bolStack)
     
+    # Build dict objects for each test(1 AND 2)
     
-    #File Context Analysis
-    results = []
-    t1length = len(t1fcStack)
-    t2length = len(t2fcStack)
+    # Service
+    test1svc_dic = {}
+    for line1 in t1svcStack:
+	svcname = line1.get("Service")
+	svchash = line1.get("Hash")
+	test1svc_dic[svcname] = svchash
     
-    #length check
-    if t1length != t2length:
-	print "Count difference"
-	print "Set1:",t1length," vs ",t2length
-    else:
-	print "Both Sets Same Count of", t1length
+    test2svc_dic = {}
+    for line1 in t2svcStack:
+	svcname = line1.get("Service")
+	svchash = line1.get("Hash")
+	test2svc_dic[svcname] = svchash
+    
+    # Booleans
+    test1bol_dic = {}
+    for line1 in t1bolStack:
+	bolname = line1.get("Boolean")
+	bolhash = line1.get("Hash")
+	test1bol_dic[bolname] = bolhash
+    
+    test2bol_dic = {}
+    for line1 in t2bolStack:
+	bolname = line1.get("Boolean")
+	bolhash = line1.get("Hash")
+	test2bol_dic[bolname] = bolhash
 	
-    for itemt1, itemt2 in zip(t1fcStack, t2fcStack):
-	t1hash = itemt1.get("Hash")
-	t2hash = itemt2.get("Hash")
-	diff =  cmp(t1hash,t2hash)
-	if diff != 0:
-	    test2id = itemt2.get("_id")
-	    print "Diff at test1 Path:", itemt1.get("Path"),"Hash:", itemt1.get("Hash"), " Test2:", itemt2.get("Path"),"Hash:", itemt2.get("Hash")
-	    results.append(test2id)
-	    #Check if same type
-	    if itemt1.get("Path") != itemt2.get("Path"):
-		print "Not Same Items"    
+    # fcontext
+    test1fc_dic = {}
+    for line1 in t1fcStack:
+	fcpath = line1.get("Path")
+	fchash = line1.get("Hash")
+	test1fc_dic[fcpath] = fchash
     
+    test2fc_dic = {}
+    for line1 in t2fcStack:
+	fcpath = line1.get("Path")
+	fchash = line1.get("Hash")
+	test2fc_dic[fcpath] = fchash    
+    
+	
+    # Service Checks
+    print "########## Service Compare Test 1 to Test 2##########"
+    svcdiff = test1svc_dic.viewitems()^ test2svc_dic.viewitems()
+    print tabulate(svcdiff)
+    print "---------------------------------------------------------------------"    
+    
+    if t1svclength != t1svclength:
+	print "Service Count difference"
+	print "Set1:",t1svclength," vs ",t2svclength
+	for k,v in test1svc_dic.iteritems():
+	    if k not in list(test2svc_dic.keys()):
+		print "Not in test2 service:"
+		print k,v
+    else:
+	print "Both file context Sets Same Count of:", t1svclength  
+    print "---------------------------------------------------------------------"
+    
+    # Boolean checks
+    print "########## Boolean Compare Test 1 to Test 2 ##########"
+    boldiff = test1bol_dic.viewitems()^ test2bol_dic.viewitems()
+    print tabulate(boldiff)
+    print "---------------------------------------------------------------------"    
+    
+    if t1bollength != t2bollength:
+	print "Boolean Service Count difference"
+	print "Set1:",t1bollength," vs ",t2bollength
+	for k,v in test1bol_dic.iteritems():
+	    if k not in list(test2bol_dic.keys()):
+		print "Not in test2 booleans:"
+		print k,v
+    else:
+	print "Both Boolean Sets Same Count of:", t1bollength  
+    print "---------------------------------------------------------------------"
+    
+    # File Context checks
+    print "########## File Context Compare Test 1 to Test 2 ##########"
+    fcdiff = test1fc_dic.viewitems()^ test2fc_dic.viewitems()
+    print tabulate(fcdiff)
+    print "---------------------------------------------------------------------"    
+    
+    if t1fclength != t2fclength:
+	print "Fcontext Count difference"
+	print "Set1:",t1fclength," vs ",t2fclength
+	for k,v in test1fc_dic.iteritems():
+	    if k not in list(test2fc_dic.keys()):
+		print "Not in test2:"
+		print k,v
+    else:
+	print "Both file context Sets Same Count of", t1fclength    
+    print "---------------------------------------------------------------------"    
     return
 
 
