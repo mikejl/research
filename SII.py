@@ -392,7 +392,12 @@ def fcontextfp():
     print "Item Count: ", fcontextcount
     print "***************************************************"    
     # Store results to dB ########
-    # note the xxxPerfs is a type <str> 
+    # note the xxxPerfs is a type <str>
+    # File Output
+    #prof_output = '/Users/mike/Downloads/fcontextpf.profile'
+    #ps.dump_stats(prof_output) #path this if its used
+    #print "Written output to:", prof_output
+    # DB Input
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
@@ -400,7 +405,6 @@ def fcontextfp():
 	docinsert = {"Sys": system, "testnum": testnum, "fccount": fcontextcount, "fcontextfp": fcfpPerfs, "date": datetime.datetime.utcnow()}
 	print "Saving..."
 	db.prefdata.insert(docinsert)
-	#ps.dump_stats("fcontextfp.profile") #path this if its used
     # perf wrapper end #    
 
     printfbsub()  
@@ -646,11 +650,213 @@ def searchrel():
     return
 
 # ################################################################
-#  Diffs Function
+#  Diff Functions
 # ################################################################
-#TODO
+
+def stackdiff():
+    client = MongoClient('localhost', 27017)
+    
+    #test set 1 data
+    str(test1)
+    dbstr = test1
+    DBNAME = dbstr
+    db = getattr(client,dbstr)
+    
+    # Service    
+    t1svcStack = list(db.service.find({},{"Service":1 ,"Sys":1,"Context":1,"Hash":1}).sort("Service"))
+    # Poicy
+    t1bolStack = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1,"Hash":1}).sort("Boolean"))
+    # File Context
+    t1fcStack = list(db.fcontext.find({},{"testnum":1 ,"Sys":1,"Context":1,"Path":1,"Hash":1}).sort("Path"))
+    
+    # Test set 2 data
+    str(test2)
+    dbstr = test2
+    DBNAME = dbstr
+    db = getattr(client,dbstr) 
+    # Service    
+    t2svcStack = list(db.service.find({},{"Service":1 ,"Sys":1,"Context":1,"Hash":1}).sort("Service"))
+    # Poicy
+    t2bolStack = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1,"Hash":1}).sort("Boolean"))
+    # File Context
+    t2fcStack = list(db.fcontext.find({},{"testnum":1 ,"Sys":1,"Context":1,"Path":1,"Hash":1}).sort("Path"))
+    
+    #Check for diffs in Service / Policy / File Context
+    # Get count for each stack
+    t1fclength = len(t1fcStack)
+    t2fclength = len(t2fcStack)
+    t1svclength = len(t1svcStack)
+    t2svclength = len(t2svcStack)
+    t1bollength = len(t1bolStack)
+    t2bollength = len(t2bolStack)
+    
+    # Build dict objects for each test(1 AND 2)
+    
+    # Service
+    test1svc_dic = {}
+    for line1 in t1svcStack:
+	svcname = line1.get("Service")
+	svchash = line1.get("Hash")
+	test1svc_dic[svcname] = svchash
+    
+    test2svc_dic = {}
+    for line1 in t2svcStack:
+	svcname = line1.get("Service")
+	svchash = line1.get("Hash")
+	test2svc_dic[svcname] = svchash
+    
+    # Booleans
+    test1bol_dic = {}
+    for line1 in t1bolStack:
+	bolname = line1.get("Boolean")
+	bolhash = line1.get("Hash")
+	test1bol_dic[bolname] = bolhash
+    
+    test2bol_dic = {}
+    for line1 in t2bolStack:
+	bolname = line1.get("Boolean")
+	bolhash = line1.get("Hash")
+	test2bol_dic[bolname] = bolhash
+	
+    # fcontext
+    test1fc_dic = {}
+    for line1 in t1fcStack:
+	fcpath = line1.get("Path")
+	fchash = line1.get("Hash")
+	test1fc_dic[fcpath] = fchash
+    
+    test2fc_dic = {}
+    for line1 in t2fcStack:
+	fcpath = line1.get("Path")
+	fchash = line1.get("Hash")
+	test2fc_dic[fcpath] = fchash    
+    
+	
+    # Service Checks
+    print "########## Service Compare Test 1 to Test 2##########"
+    svcdiff = test1svc_dic.viewitems()^ test2svc_dic.viewitems()
+    print tabulate(svcdiff)
+    print "---------------------------------------------------------------------"    
+    
+    if t1svclength != t1svclength:
+	print "Service Count difference"
+	print "Set1:",t1svclength," vs ",t2svclength
+	for k,v in test1svc_dic.iteritems():
+	    if k not in list(test2svc_dic.keys()):
+		print "Not in test2 service:"
+		print k,v
+    else:
+	print "Both file context Sets Same Count of:", t1svclength  
+    print "---------------------------------------------------------------------"
+    
+    # Boolean checks
+    print "########## Boolean Compare Test 1 to Test 2 ##########"
+    boldiff = test1bol_dic.viewitems()^ test2bol_dic.viewitems()
+    print tabulate(boldiff)
+    print "---------------------------------------------------------------------"    
+    
+    if t1bollength != t2bollength:
+	print "Boolean Service Count difference"
+	print "Set1:",t1bollength," vs ",t2bollength
+	for k,v in test1bol_dic.iteritems():
+	    if k not in list(test2bol_dic.keys()):
+		print "Not in test2 booleans:"
+		print k,v
+    else:
+	print "Both Boolean Sets Same Count of:", t1bollength  
+    print "---------------------------------------------------------------------"
+    
+    # File Context checks
+    print "########## File Context Compare Test 1 to Test 2 ##########"
+    fcdiff = test1fc_dic.viewitems()^ test2fc_dic.viewitems()
+    print tabulate(fcdiff)
+    print "---------------------------------------------------------------------"    
+    
+    if t1fclength != t2fclength:
+	print "Fcontext Count difference"
+	print "Set1:",t1fclength," vs ",t2fclength
+	for k,v in test1fc_dic.iteritems():
+	    if k not in list(test2fc_dic.keys()):
+		print "Not in test2:"
+		print k,v
+    else:
+	print "Both file context Sets Same Count of", t1fclength    
+    print "---------------------------------------------------------------------"    
+    return
+
+
+
+# ################################################################
+# FP Diffs.  Test main fingerprints for two tests.
+# ################################################################
 def diffs():
-    print "Find and View Diffs TODO"
+    global test1
+    global test2
+    # Get test1 and test 2 from input #
+    print "Enter test # for test1"
+    test1 = raw_input("Test1:")      
+    print "Enter test # for test2"
+    test2 = raw_input("Test2:")
+    
+    print "Runing main diffs for finger prints on test:",test1," vs test:",test2
+
+    
+    # Conect to results
+    client = MongoClient('localhost', 27017)
+    db = client.results
+    
+    # Pull testresults data
+    testres = list(db.results.find({},{"testnum":1 ,"contextFP":1,"serviceFP":1,"booleanFP":1, "_id":0}))
+    resSet1 = [res for res in testres if test1 in str(res['testnum'])]
+    resSet2 = [res for res in testres if test2 in str(res['testnum'])]
+    
+    # Main diff between both tests
+    maindiff = cmp(resSet1, resSet2)
+    
+    #Extract fingerprints
+    t1sfp = resSet1[0].get("serviceFP") 
+    t1bfp = resSet1[0].get("booleanFP")  
+    t1cfp = resSet1[0].get("contextFP")
+    t2sfp = resSet2[0].get("serviceFP")
+    t2bfp = resSet2[0].get("booleanFP")
+    t2cfp = resSet2[0].get("contextFP")
+    
+    if maindiff != 0:
+	sfpdiff = cmp(t1sfp,t2sfp)
+	if sfpdiff != 0:
+	    print "SFP DIFF!!"
+	    print "run SPF stack diff"
+	else:
+	    print "No SPF Diff"
+	bfpdiff = cmp(t1bfp,t2bfp)
+	if bfpdiff != 0:
+	    print "BFP DIFF!!"
+	    print "run BPF stack diff"
+	else:
+	    print "No BFP Diff"
+	cfpdiff = cmp(t1cfp,t2cfp)
+	if cfpdiff != 0:
+	    print "File Context FP DIFF!!"
+	    print "run CFP stack diff?"
+	else:
+	    print "No CFP Diff"
+    else:
+	print "No DIFF"
+    print "#####################################################"
+    print "Finger Prints"
+    print "#####################################################"  
+    print "Test 1"
+    print tabulate(resSet1, headers="keys", tablefmt="pipe")
+    print "Test 2"
+    print tabulate(resSet2, headers="keys", tablefmt="pipe")
+    print ""
+    print "#####################################################"
+    print "Run Hash Stack Analysis?"
+    runanswer=raw_input("Y or N: ")
+    if not runanswer:
+	raise ValueError('empty string')
+    if runanswer == "Y":
+	stackdiff()	        
     return
     
 
