@@ -650,10 +650,74 @@ def searchrel():
     return
 
 # ################################################################
-#  Diffs Function
+#  Diff Functions
 # ################################################################
-#TODO
+
+def stackdiff():
+    client = MongoClient('localhost', 27017)
+    
+    #test set 1 data
+    str(test1)
+    dbstr = test1
+    DBNAME = dbstr
+    db = getattr(client,dbstr)
+    
+    # Service    
+    t1svcStack = list(db.service.find({},{"Service":1 ,"Sys":1,"Context":1,"Hash":1}).sort("Service"))
+    # Poicy
+    t1bolStack = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1,"Hash":1}).sort("Boolean"))
+    # File Context
+    t1fcStack = list(db.fcontext.find({},{"testnum":1 ,"Sys":1,"Context":1,"Path":1,"Hash":1}).sort("Path"))
+    
+    # Test set 2 data
+    str(test2)
+    dbstr = test2
+    DBNAME = dbstr
+    db = getattr(client,dbstr) 
+    # Service    
+    t2svcStack = list(db.service.find({},{"Service":1 ,"Sys":1,"Context":1,"Hash":1}).sort("Service"))
+    # Poicy
+    t2bolStack = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1,"Hash":1}).sort("Boolean"))
+    # File Context
+    t2fcStack = list(db.fcontext.find({},{"testnum":1 ,"Sys":1,"Context":1,"Path":1,"Hash":1}).sort("Path"))
+    
+    #Check for diffs in Service / Policy / File Context
+    
+    
+    #File Context Analysis
+    results = []
+    t1length = len(t1fcStack)
+    t2length = len(t2fcStack)
+    
+    #length check
+    if t1length != t2length:
+	print "Count difference"
+	print "Set1:",t1length," vs ",t2length
+    else:
+	print "Both Sets Same Count of", t1length
+	
+    for itemt1, itemt2 in zip(t1fcStack, t2fcStack):
+	t1hash = itemt1.get("Hash")
+	t2hash = itemt2.get("Hash")
+	diff =  cmp(t1hash,t2hash)
+	if diff != 0:
+	    test2id = itemt2.get("_id")
+	    print "Diff at test1 Path:", itemt1.get("Path"),"Hash:", itemt1.get("Hash"), " Test2:", itemt2.get("Path"),"Hash:", itemt2.get("Hash")
+	    results.append(test2id)
+	    #Check if same type
+	    if itemt1.get("Path") != itemt2.get("Path"):
+		print "Not Same Items"    
+    
+    return
+
+
+
+# ################################################################
+# FP Diffs.  Test main fingerprints for two tests.
+# ################################################################
 def diffs():
+    global test1
+    global test2
     # Get test1 and test 2 from input #
     print "Enter test # for test1"
     test1 = raw_input("Test1:")      
@@ -698,8 +762,8 @@ def diffs():
 	    print "No BFP Diff"
 	cfpdiff = cmp(t1cfp,t2cfp)
 	if cfpdiff != 0:
-	    print "CFP DIFF!!"
-	    print "run CFP stack diff"
+	    print "File Context FP DIFF!!"
+	    print "run CFP stack diff?"
 	else:
 	    print "No CFP Diff"
     else:
@@ -713,6 +777,12 @@ def diffs():
     print tabulate(resSet2, headers="keys", tablefmt="pipe")
     print ""
     print "#####################################################"
+    print "Run Hash Stack Analysis?"
+    runanswer=raw_input("Y or N: ")
+    if not runanswer:
+	raise ValueError('empty string')
+    if runanswer == "Y":
+	stackdiff()	        
     return
     
 
