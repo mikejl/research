@@ -16,6 +16,7 @@ from pymongo import MongoClient
 import timeit
 import cProfile, StringIO ,pstats
 from tabulate import tabulate
+import csv
 
 # ################################################################
 # Set Initial  Vars
@@ -339,7 +340,16 @@ def boolsfp():
     print "Item Count: ", boolcount
     print "***************************************************"    
     # Store results to dB ########
-    # note the xxxPerfs is a type <str> 
+    # note the xxxPerfs is a type <str>
+    bfpPerfs1 = bfpPerfs.lstrip()
+    perfline = bfpPerfs1.splitlines()
+    function_name = sys._getframe().f_code.co_name
+    outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
+    with open(outFileName, "wb") as f:
+	writer = csv.writer(f, delimiter=',', quotechar='|')
+	for line in perfline:
+	    linepart = line.split()
+	    writer.writerow(linepart)    
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
@@ -394,9 +404,15 @@ def fcontextfp():
     # Store results to dB ########
     # note the xxxPerfs is a type <str>
     # File Output
-    #prof_output = '/Users/mike/Downloads/fcontextpf.profile'
-    #ps.dump_stats(prof_output) #path this if its used
-    #print "Written output to:", prof_output
+    fcfpPerfs1 = fcfpPerfs.lstrip()
+    perfline = fcfpPerfs1.splitlines()
+    function_name = sys._getframe().f_code.co_name
+    outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
+    with open(outFileName, "wb") as f:
+	writer = csv.writer(f, delimiter=',', quotechar='|')
+	for line in perfline:
+	    linepart = line.split()
+	    writer.writerow(linepart)    
     # DB Input
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
@@ -449,7 +465,16 @@ def servicefp():
     print "Item Count: ", servicefpcount
     print "***************************************************"    
     # Store results to dB ########
-    # note the xxxPerfs is a type <str> 
+    # note the xxxPerfs is a type <str>
+    sfpPerfs1 = sfpPerfs.lstrip()
+    perfline = sfpPerfs1.splitlines()
+    function_name = sys._getframe().f_code.co_name
+    outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
+    with open(outFileName, "wb") as f:
+	writer = csv.writer(f, delimiter=',', quotechar='|')
+	for line in perfline:
+	    linepart = line.split()
+	    writer.writerow(linepart)    
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
