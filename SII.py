@@ -332,7 +332,7 @@ def boolsfp():
     boolcount = db.booleans.find().count()
     s = StringIO.StringIO()
     sortby = 'calls'  
-    ps = pstats.Stats(bpr, stream=s).sort_stats(sortby)
+    ps = pstats.Stats(bpr, stream=s).sort_stats(sortby).strip_dirs()
     ps.print_stats()
     bfpPerfs = s.getvalue()
     print "***************************************************"
@@ -394,7 +394,7 @@ def fcontextfp():
     fcontextcount = db.fcontext.find().count()
     s = StringIO.StringIO()
     sortby = 'calls'  
-    ps = pstats.Stats(fcpr, stream=s).sort_stats(sortby)
+    ps = pstats.Stats(fcpr, stream=s).sort_stats(sortby).strip_dirs()
     ps.print_stats()
     fcfpPerfs = s.getvalue()
     print "***************************************************"
@@ -457,7 +457,7 @@ def servicefp():
     servicefpcount = db.service.find().count()
     s = StringIO.StringIO()
     sortby = 'calls'  
-    ps = pstats.Stats(spr, stream=s).sort_stats(sortby)
+    ps = pstats.Stats(spr, stream=s).sort_stats(sortby).strip_dirs()
     ps.print_stats()
     sfpPerfs = s.getvalue()
     print "***************************************************"
