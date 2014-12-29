@@ -12,6 +12,7 @@ See https://github.com/mikejl/research/wiki/Setup-Notes
 
 Python packages used:  
 import md5  
+import csv  
 import os, sys  
 import datetime  
 import subprocess  
