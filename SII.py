@@ -350,6 +350,10 @@ def boolsfp():
 	for line in perfline:
 	    linepart = line.split()
 	    writer.writerow(linepart)    
+    # raw file
+    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    ps.dump_stats(outProfileName)
+    # Db	    
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
@@ -357,7 +361,6 @@ def boolsfp():
         docinsert = {"Sys": system, "testnum": testnum, "boolscount": boolcount, "boolsfp": bfpPerfs, "date": datetime.datetime.utcnow()}
         print "Saving..."
         db.prefdata.insert(docinsert)
-	#ps.dump_stats("boolsfp.profile") #path this if its used
     # perf wrapper end #
     
     printfbsub()  
@@ -413,6 +416,9 @@ def fcontextfp():
 	for line in perfline:
 	    linepart = line.split()
 	    writer.writerow(linepart)    
+    # raw file
+    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    ps.dump_stats(outProfileName)       
     # DB Input
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
@@ -475,6 +481,10 @@ def servicefp():
 	for line in perfline:
 	    linepart = line.split()
 	    writer.writerow(linepart)    
+    # raw file
+    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    ps.dump_stats(outProfileName)
+    # Db    
     db = client.prefdata
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
@@ -482,7 +492,6 @@ def servicefp():
 	docinsert = {"Sys": system, "testnum": testnum, "servicecount": servicefpcount, "servicefp": sfpPerfs, "date": datetime.datetime.utcnow()}
 	print "Saving..."
 	db.prefdata.insert(docinsert)
-	#ps.dump_stats("boolsfp.profile") #path this if its used
     # perf wrapper end # 
     
     printfbsub()

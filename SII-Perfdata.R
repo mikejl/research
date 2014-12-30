@@ -49,8 +49,16 @@ trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 # ################# End functions ##################
 
 # ################# Pull from csv ##################
-csvfile <- '/Users/mike/Documents/output.csv'
-csvdata <- read.csv2(csvfile, fill = TRUE, skip = 3, sep = ",", header = TRUE, comment.char = "\'")
+testfile <- '/Users/mike/Documents/output.csv'
+testdata <- read.csv2(csvfile, fill = TRUE, skip = 3, sep = ",", header = TRUE, comment.char = "", flush = TRUE)
+
+
+csvfile <- '/Users/mike/Documents/localhost-boolsfp-test1.csv'
+testdata <- read.csv2(csvfile, fill = TRUE, skip = 3, sep = ",", header = TRUE, comment.char = "", allowEscapes = TRUE)
+
+
+
+csvdata <- testdata
 
 ##TODO .. fix truncating data on import.  
 
