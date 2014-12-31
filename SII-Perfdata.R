@@ -44,27 +44,26 @@ library (plyr)
 
 # Trim blanks
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-
+clearspace <- function(x) gsub("^[[:space:]]+|[[:space:]]+$", "", x) 
 
 # ################# End functions ##################
 
+whitespace <- " \t\n\r\v\f"
+
 # ################# Pull from csv ##################
-testfile <- '/Users/mike/Documents/output.csv'
-testdata <- read.csv2(csvfile, fill = TRUE, skip = 3, sep = ",", header = TRUE, comment.char = "", flush = TRUE)
+# Need to:
+#   1. remove first three rows
+#   2. fix last columns (merge and remove spaces)
+#   3. Sort mu ncalls 
+#   4. then save as <name>-scrib.csv
 
+bolsfpt1file <- '/Users/mike/Downloads/localhost-boolsfp-test1-scrub.csv'
+bolsfpt1 <- read.csv2(bolsfpt1file, fill = TRUE, sep = ",", header = TRUE, comment.char = "")
 
-csvfile <- '/Users/mike/Documents/localhost-boolsfp-test1.csv'
-testdata <- read.csv2(csvfile, fill = TRUE, skip = 3, sep = ",", header = TRUE, comment.char = "", allowEscapes = TRUE)
-
-
-
-csvdata <- testdata
-
-##TODO .. fix truncating data on import.  
+csvdata <- bolsfpt1
 
 #Trim text
-#csvdata$filename.lineno.function. <- trim(csvdata$filename.lineno.function.)
-
+csvdata$filename.lineno.function. <- trim(csvdata$filename.lineno.function.)
 
 # Factor function col
 csvdata$filename.lineno.function. <- as.factor(csvdata$filename.lineno.function.)
@@ -75,34 +74,29 @@ csvdata$percall <- as.numeric(as.character(csvdata$percall))
 csvdata$cumtime <- as.numeric(as.character(csvdata$cumtime))
 csvdata$percall.1 <- as.numeric(as.character(csvdata$percall.1))
 
-#df <- data.frame(matrix(unlist(csvdata),byrow=T))
-
-#df2 <- ldply (csvdata, data.frame)
-
-# Sort by number of calls  ## Cuts off filename.lineno.function text.
-csvdata_sort <- csvdata[order(-csvdata$ncalls),]
-
-
 # Mean numcalls and cumtime
 smryncalls <- ddply(csvdata, .var = c("filename.lineno.function."), 
                     summarize, meanncall = mean(ncalls), meanct = mean(cumtime),
                     meantt = mean(tottime))
-# Sort smryncalls
+
+# Sort by number of calls  
+smryncalls_sort <- smryncalls[order(-smryncalls$meanncall),]
 
 # top 10 calls from sort 
-top20 <- csvdata_sort[1:20,]
+top10 <- smryncalls_sort[1:10,]
 
-# Graphs
+
+# ############# Graphs ##########################
 # http://www.statmethods.net/graphs/creating.html
 # 
 # Device reset
 dev.off()
-
+# ################################################
 #
-hist(csvdata$ncalls)
+hist(top10$meanncall)
 grid()
 
-histogram(~ top20$cumtime | top20$filename.lineno.function., xlab = "Time by Function")
+histogram(~ top10$meanct | top10$filename.lineno.function., xlab = "Time by Function")
 grid()
 
 boxplot(csvdata$ncalls ~ csvdata$filename.lineno.function., data = csvdata,
