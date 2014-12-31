@@ -30,6 +30,9 @@
 # fpdata
 # ############### End Mongo stuff ################
 
+# Turn off scinot
+options(scipen=999)
+
 # ############### Library loading ################
 
 library(lattice)
@@ -85,6 +88,11 @@ smryncalls_sort <- smryncalls[order(-smryncalls$meanncall),]
 # top 10 calls from sort 
 top10 <- smryncalls_sort[1:10,]
 
+# Sumary data 
+summary(top10$meanncall)
+
+
+
 
 # ############# Graphs ##########################
 # http://www.statmethods.net/graphs/creating.html
@@ -96,30 +104,22 @@ dev.off()
 hist(top10$meanncall)
 grid()
 
+# Not too useful
 histogram(~ top10$meanct | top10$filename.lineno.function., xlab = "Time by Function")
 grid()
 
-boxplot(csvdata$ncalls ~ csvdata$filename.lineno.function., data = csvdata,
+boxplot(top10$meanncall ~ top10$filename.lineno.function., data = top10,
         xlab = "Function", main = "SII Calls by Function", col = "red", cex.axis = 0.75)
 
 # Mean numcalls and cumtime
-smryncalls <- ddply(csvdata, .var = c("filename.lineno.function."), summarize, meanncall = mean(ncalls), meanct = mean(cumtime))
+smry <- ddply(csvdata, .var = c("filename.lineno.function."), 
+              summarize, meanncall = mean(ncalls), meanct = mean(cumtime))
 
-plot(smryncalls)
-
-boxplot(smryncalls$meanncall ~ smryncalls$filename.lineno.function., data = smryncalls,
-        xlab = "Function", main = "SII Calls by Function", col = "red", cex.axis = 0.75)
-
-histogram(~ smryncalls$meanncall)
-grid()
+# This may work if I can get function name in
+barplot(top10$meanncall, 
+        main="Function Calls", xlab="Number of Calls")
 
 
-barplot(smryncalls$meanncall, main="Function Calls", xlab="Number of Calls")
-
-
-# Just the data
-boxplot(csvdata$ncalls ~ csvdata$filename.lineno.function., data = csvdata,
-        xlab = "Function", main = "SII Calls by Function", plot = FALSE)
 
 
 
