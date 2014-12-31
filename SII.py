@@ -343,6 +343,7 @@ def boolsfp():
     # note the xxxPerfs is a type <str>
     bfpPerfs1 = bfpPerfs.lstrip()
     perfline = bfpPerfs1.splitlines()
+    smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
     with open(outFileName, "wb") as f:
@@ -358,7 +359,7 @@ def boolsfp():
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
     if YN == "Y":
-        docinsert = {"Sys": system, "testnum": testnum, "boolscount": boolcount, "boolsfp": bfpPerfs, "date": datetime.datetime.utcnow()}
+        docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Perfdata": bfpPerfs, "Perfsmry": smry, "Count": boolcount, "Date": datetime.datetime.utcnow()}
         print "Saving..."
         db.prefdata.insert(docinsert)
     # perf wrapper end #
@@ -409,6 +410,7 @@ def fcontextfp():
     # File Output
     fcfpPerfs1 = fcfpPerfs.lstrip()
     perfline = fcfpPerfs1.splitlines()
+    smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
     with open(outFileName, "wb") as f:
@@ -424,7 +426,7 @@ def fcontextfp():
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
     if YN == "Y":
-	docinsert = {"Sys": system, "testnum": testnum, "fccount": fcontextcount, "fcontextfp": fcfpPerfs, "date": datetime.datetime.utcnow()}
+	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": fcontextcount, "Perfdata": fcfpPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
 	print "Saving..."
 	db.prefdata.insert(docinsert)
     # perf wrapper end #    
@@ -474,6 +476,7 @@ def servicefp():
     # note the xxxPerfs is a type <str>
     sfpPerfs1 = sfpPerfs.lstrip()
     perfline = sfpPerfs1.splitlines()
+    smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
     with open(outFileName, "wb") as f:
@@ -489,7 +492,7 @@ def servicefp():
     print "Store cProfile results to perfdata dB?"
     YN=raw_input("Y/N: ")
     if YN == "Y":
-	docinsert = {"Sys": system, "testnum": testnum, "servicecount": servicefpcount, "servicefp": sfpPerfs, "date": datetime.datetime.utcnow()}
+	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": servicefpcount, "Perfdata": sfpPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
 	print "Saving..."
 	db.prefdata.insert(docinsert)
     # perf wrapper end # 
@@ -690,6 +693,10 @@ def searchrel():
 def stackdiff():
     client = MongoClient('localhost', 27017)
     
+    # perf wrapper start (i)pr where i=function #
+    stackpr = cProfile.Profile()
+    stackpr.enable()  #start   
+    
     #test set 1 data
     str(test1)
     dbstr = test1
@@ -815,7 +822,39 @@ def stackdiff():
 		print k,v
     else:
 	print "Both file context Sets Same Count of", t1fclength    
-    print "---------------------------------------------------------------------"    
+    print "---------------------------------------------------------------------"
+    
+    stackpr.disable() #stop
+    s = StringIO.StringIO()
+    sortby = 'calls'  
+    ps = pstats.Stats(stackpr, stream=s).sort_stats(sortby).strip_dirs()
+    ps.print_stats()
+    stackDiffPerfs = s.getvalue()    
+    # Store results to dB ########
+    # note the xxxPerfs is a type <str>
+    stackDiffPerfs1 = stackDiffPerfs.lstrip()
+    perfline = stackDiffPerfs1.splitlines()
+    smry = perfline[0]
+    function_name = sys._getframe().f_code.co_name
+    outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
+    with open(outFileName, "wb") as f:
+	writer = csv.writer(f, delimiter=',', quotechar='|')
+	for line in perfline:
+	    linepart = line.split()
+	    writer.writerow(linepart)    
+    # raw file
+    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    ps.dump_stats(outProfileName)
+    # Db    
+    db = client.prefdata
+    print "Store cProfile results to perfdata dB?"
+    YN=raw_input("Y/N: ")
+    if YN == "Y":
+	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": 0, "Perfdata": stackDiffPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
+	print "Saving..."
+	db.prefdata.insert(docinsert)
+    # perf wrapper end #   
+    
     return
 
 
@@ -838,6 +877,10 @@ def diffs():
     # Conect to results
     client = MongoClient('localhost', 27017)
     db = client.results
+
+    # perf wrapper start (i)pr where i=function #
+    diffpr = cProfile.Profile()
+    diffpr.enable()  #start 
     
     # Pull testresults data
     testres = list(db.results.find({},{"testnum":1 ,"contextFP":1,"serviceFP":1,"booleanFP":1, "_id":0}))
@@ -858,24 +901,32 @@ def diffs():
     if maindiff != 0:
 	sfpdiff = cmp(t1sfp,t2sfp)
 	if sfpdiff != 0:
-	    print "SFP DIFF!!"
-	    print "run SPF stack diff"
+	    print "************ Seervice FP DIFF!!"
+	    print "Run SPF stack diff"
 	else:
-	    print "No SPF Diff"
+	    print "NO SPF Diff"
 	bfpdiff = cmp(t1bfp,t2bfp)
 	if bfpdiff != 0:
-	    print "BFP DIFF!!"
-	    print "run BPF stack diff"
+	    print "************ Boolean FP DIFF!!"
+	    print "Run BPF stack diff"
 	else:
-	    print "No BFP Diff"
+	    print "NO BFP Diff"
 	cfpdiff = cmp(t1cfp,t2cfp)
 	if cfpdiff != 0:
-	    print "File Context FP DIFF!!"
-	    print "run CFP stack diff?"
+	    print "************ File Context FP DIFF!!"
+	    print "Run CFP stack diff?"
 	else:
-	    print "No CFP Diff"
+	    print "NO CFP Diff"
     else:
-	print "No DIFF"
+	print "NO DIFFs"
+    
+    diffpr.disable() #stop
+    s = StringIO.StringIO()
+    sortby = 'calls'  
+    ps = pstats.Stats(diffpr, stream=s).sort_stats(sortby).strip_dirs()
+    ps.print_stats()
+    DiffPerfs = s.getvalue()    
+    
     print "#####################################################"
     print "Finger Prints"
     print "#####################################################"  
@@ -885,6 +936,31 @@ def diffs():
     print tabulate(resSet2, headers="keys", tablefmt="pipe")
     print ""
     print "#####################################################"
+    
+    DiffPerfs1 = DiffPerfs.lstrip()
+    perfline = DiffPerfs1.splitlines()
+    smry = perfline[0]
+    function_name = sys._getframe().f_code.co_name
+    outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
+    with open(outFileName, "wb") as f:
+	writer = csv.writer(f, delimiter=',', quotechar='|')
+	for line in perfline:
+	    linepart = line.split()
+	    writer.writerow(linepart)    
+    # raw file
+    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    ps.dump_stats(outProfileName)
+    # Db    
+    db = client.prefdata
+    print "Store cProfile results to perfdata dB?"
+    YN=raw_input("Y/N: ")
+    if YN == "Y":
+	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": 0, "Perfdata": DiffPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
+	print "Saving..."
+	db.prefdata.insert(docinsert)
+
+    
+    
     print "Run Hash Stack Analysis?"
     runanswer=raw_input("Y or N: ")
     if not runanswer:
