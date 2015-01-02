@@ -159,12 +159,6 @@ def booleanparse():
     # Query db collection and mongoexport the collection to csv
     #print list(db.booleans.find())
     print "loaded into booleans: ", db.booleans.count()
-    # CSV Output
-    print "Export dB results?"
-    exportYN=raw_input("Y/N: ")
-    if exportYN == "Y":
-        print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d booleans -c booleans --csv -f "Boolean,Description,Default,State,Hash,date" > /home/mike/boolean.csv'], shell=True)
     return
 
 # ################################################################
@@ -223,13 +217,6 @@ def fcontextpase():
     
     # Query db collection and mongoexport the collection to csv    
     print "loaded into fcontext: ", db.fcontext.count()
-    
-    # CSV Output
-    print "Export dB results?"
-    exportYN=raw_input("Y/N: ")
-    if exportYN == "Y":
-        print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Path,Type,Context,Hash,date" > /home/mike/fcontext.csv'], shell=True)
     return
 
 # ################################################################
@@ -279,19 +266,7 @@ def serviceparse():
     else:
 	print "Done"
         #sdomain = "<<none>>"
-    #service = dfile2[0]
-    #tohash = service+sdomain+Context
-    #Hash = md5.new(tohash).hexdigest()
-    #docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
-    #print docinsert
-    #db.service.insert(docinsert)
 
-    # CSV Output
-    print "Export dB results?"
-    exportYN=raw_input("Y/N: ")
-    if exportYN == "Y":
-        print "Exporting..."
-        subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Sys,Service,Domain,Hash,date" > /home/mike/service.csv'], shell=True)
     print "loaded into service: ", db.service.count()
     return
     
@@ -641,7 +616,6 @@ def searchrel():
     print "Current Domains for test: " , testnum
     print "------------------------------------------------------------------------------------"
     print "Services Domains Found:"
-    print "_______________________"
     for item in distinctsvc:
         print item
     #print "----------"
@@ -656,8 +630,6 @@ def searchrel():
     print "Enter domain to search for"
     dsel = raw_input("Domain: ")      
     # Print Results
-    #ts = "\t"
-    #sep=ts+"       "+ts
     print " "
     print "------------------------------------------------------------------------------------"
     print "Services:"
@@ -774,9 +746,22 @@ def stackdiff():
     
 	
     # Service Checks
-    print "########## Service Compare Test 1 to Test 2##########"
+    print "########## Service Compare Test 1 to Test 2 ##########"
     svcdiff = test1svc_dic.viewitems()^ test2svc_dic.viewitems()
-    print tabulate(svcdiff)
+    #print tabulate(svcdiff)
+    
+    for diffitem in svcdiff:
+	dname =  diffitem[1]
+	for xitem in t1svcStack:
+	    if xitem["Hash"] == dname:
+		print "-------------------------- Test 1--------------------------"
+		outitemsx = xitem.items()
+		print tabulate(outitemsx,tablefmt="grid")
+	for yitem in t2svcStack:
+	    if yitem["Hash"] == dname:
+		print "-------------------------- Test 2 --------------------------"
+		outitemsy = yitem.items()
+		print tabulate(outitemsy,tablefmt="grid")   
     print "---------------------------------------------------------------------"    
     
     if t1svclength != t1svclength:
@@ -787,13 +772,25 @@ def stackdiff():
 		print "Not in test2 service:"
 		print k,v
     else:
-	print "Both file context Sets Same Count of:", t1svclength  
+	print "Both Service tests have same count of:", t1svclength  
     print "---------------------------------------------------------------------"
     
     # Boolean checks
     print "########## Boolean Compare Test 1 to Test 2 ##########"
     boldiff = test1bol_dic.viewitems()^ test2bol_dic.viewitems()
-    print tabulate(boldiff)
+    #print tabulate(boldiff)
+    for diffitem in boldiff:
+	dname =  diffitem[1]
+	for xitem in t1bolStack:
+	    if xitem["Hash"] == dname:
+		print "-------------------------- Test 1--------------------------"
+		outitemsx = xitem.items()
+		print tabulate(outitemsx,tablefmt="grid")
+	for yitem in t2bolStack:
+	    if yitem["Hash"] == dname:
+		print "-------------------------- Test 2 --------------------------"
+		outitemsy = yitem.items()
+		print tabulate(outitemsy,tablefmt="grid")     
     print "---------------------------------------------------------------------"    
     
     if t1bollength != t2bollength:
@@ -810,7 +807,19 @@ def stackdiff():
     # File Context checks
     print "########## File Context Compare Test 1 to Test 2 ##########"
     fcdiff = test1fc_dic.viewitems()^ test2fc_dic.viewitems()
-    print tabulate(fcdiff)
+    #print tabulate(fcdiff)
+    for diffitem in fcdiff:
+	dname =  diffitem[1]
+	for xitem in t1fcStack:
+	    if xitem["Hash"] == dname:
+		print "-------------------------- Test 1--------------------------"
+		outitemsx = xitem.items()
+		print tabulate(outitemsx,tablefmt="grid")
+	for yitem in t2fcStack:
+	    if yitem["Hash"] == dname:
+		print "-------------------------- Test 2 --------------------------"
+		outitemsy = yitem.items()
+		print tabulate(outitemsy,tablefmt="grid")    
     print "---------------------------------------------------------------------"    
     
     if t1fclength != t2fclength:
@@ -821,7 +830,7 @@ def stackdiff():
 		print "Not in test2:"
 		print k,v
     else:
-	print "Both file context Sets Same Count of", t1fclength    
+	print "Both File Context test have same count of", t1fclength    
     print "---------------------------------------------------------------------"
     
     stackpr.disable() #stop
@@ -976,20 +985,48 @@ def diffs():
 #TODO
 def tools():
     print "Tools menu - TODO"
-    print "1. Export Results"
+    print "1. Export Results as CSV"
     print "2. Backup full dB"
     print "3. Clear DB!!"
     print "4. Return to Main"
     while True:
         sel=raw_input("Selection: ")
         if sel == "1":
-            print "TODO .. export"
+            print "CSV export for test:", testnum
+	    #subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Sys,Service,Domain,Hash,date" > service.csv'], shell=True)
+	    str(testnum)
+	    soutcsvfile = system+"-"+"service"+"-"+"test"+testnum+".csv"
+	    svcexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c service --csv -f "Service,Domain,Hash,date" >' + " " + soutcsvfile
+	    subprocess.call([svcexprt], shell=True)
+	    #subprocess.call(['mongoexport --host localhost -d booleans -c booleans --csv -f "Boolean,Description,Default,State,Hash,date" > boolean.csv'], shell=True)
+	    boutcsvfile = system+"-"+"booleans"+"-"+"test"+testnum+".csv"
+	    bolexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c booleans --csv -f "Boolean,Description,Default,State,Hash,date" >' + " " + boutcsvfile
+	    subprocess.call([bolexprt], shell=True)	    
+	    #subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Path,Type,Context,Hash,date" > fcontext.csv']
+	    fcoutcsvfile = system+"-"+"fcontext"+"-"+"test"+testnum+".csv"
+	    fcexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c fcontext --csv -f "Path,Type,Context,Hash,date" >' + " " + fcoutcsvfile
+	    subprocess.call([fcexprt], shell=True)
+	    #prefdata
+	    pdoutcsvfile = system+"-"+"prefdata"+"-"+"test"+testnum+".csv"
+	    pdexprt = 'mongoexport --host localhost -d' + " " + "prefdata" + " " + '-c prefdata --csv -f "Function,Count,Perfsmry,Testnum,Date" >' + " " + pdoutcsvfile
+	    subprocess.call([pdexprt], shell=True)
+	    #results
+	    routcsvfile = system+"-"+"results"+"-"+"test"+testnum+".csv"
+	    rexprt = 'mongoexport --host localhost -d' + " " + "results" + " " + '-c results --csv -f "contextFP,serviceFP,booleanFP,testnum,date" >' + " " + routcsvfile
+	    subprocess.call([rexprt], shell=True)		    
             continue
         elif sel == "2":
             print "run mongodump -o <hostname>"
+	    args = ['mongodump', '-o', system]
+	    str_args = [ str(x) for x in args ]
+	    dbexprt = subprocess.call(str_args)
+	    if dbexprt == 0:
+		    print "Mongodump Done"
+	    else:
+		    print "Error"	    
             continue
         elif sel == "3":
-            print "TODO .. Clear db"
+            print "Clear db"
             continue
         elif sel == "4":
             print "..."
