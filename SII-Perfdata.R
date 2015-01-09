@@ -1,10 +1,9 @@
-# #######################################
+# ###############################
+# cProfile output analysis
 # Mike Libassi
-# SII-Perfdata.R
-# R file for data analsyis
-# from csv output of SII.py
+# Jan 2015
 #
-# ############################################
+# ################################
 
 # Mongo db connections IF needed 
 # library(devtools)
@@ -30,6 +29,7 @@
 # fpdata
 # ############### End Mongo stuff ################
 
+
 # Turn off scinot
 options(scipen=999)
 
@@ -40,8 +40,6 @@ library(grid)
 library(ggplot2)
 library(graph)
 library (plyr)
-#library(Cairo)
-
 
 # ################ Functions #####################
 
@@ -53,17 +51,29 @@ clearspace <- function(x) gsub("^[[:space:]]+|[[:space:]]+$", "", x)
 
 whitespace <- " \t\n\r\v\f"
 
-# ################# Pull from csv ##################
-# Need to:
-#   1. remove first three rows
-#   2. fix last columns (merge and remove spaces)
-#   3. Sort mu ncalls 
-#   4. then save as <name>-scrib.csv
+# Set WD
+dir <- '/Users/mike/Downloads/temp test data/'
+setwd(dir)
 
-bolsfpt1file <- '/Users/mike/Downloads/localhost-boolsfp-test1-scrub.csv'
-bolsfpt1 <- read.csv2(bolsfpt1file, fill = TRUE, sep = ",", header = TRUE, comment.char = "")
 
-csvdata <- bolsfpt1
+
+## Files  
+difffile <- 'test1-diffs-test1.csvscrubbed.csv'
+stkdiffin <- 'test1-stackdiff-test1.csvscrubbed.csv'
+
+
+
+diffsdata <- read.csv2(infile, fill = TRUE, sep = ",", header = TRUE, comment.char = "", skip = 3)
+stkdiffdata <- read.csv2(stkdiffin, fill = TRUE, sep = ",", header = TRUE, comment.char = "", skip = 3)
+
+
+# Set to csvdata for analysis 
+csvdata <- diffsdata
+csvdata <- stkdiffdata
+
+
+
+# ################# take a infile from above #########################################
 
 #Trim text
 csvdata$filename.lineno.function. <- trim(csvdata$filename.lineno.function.)
@@ -119,6 +129,14 @@ smry <- ddply(csvdata, .var = c("filename.lineno.function."),
 barplot(top10$meanncall, 
         main="Function Calls", xlab="Number of Calls")
 
+# Dynamic charts
+library(rCharts)
+library(base64enc)
+
+n1 <- nPlot(meanncall ~ meantt, group = "filename.lineno.function.", 
+            data = top10, type = "multiBarChart")
+
+n1$save('chart1.html', standalone = TRUE)
 
 
 
