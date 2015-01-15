@@ -147,17 +147,13 @@ def booleanparse():
         base_filename = Boolean
         domain1 = open(os.path.join(dir_name, base_filename + filename_suffix), 'r')
         Domain = domain1.read().strip()
+
         tohash = Boolean+Default+State+Domain
-        #TODO - perf
         Hash = md5.new(tohash).hexdigest()
-        #Input into mongodb boolean collection 
-        #Mongo insert with date/time stamp 
         docinsert = {"Sys": system, "testnum": testnum, "Boolean": Boolean, "Description": Description,"Default": Default,"State": State, "Hash": Hash, "Domain": Domain, "date": datetime.datetime.utcnow()}
         db.booleans.insert(docinsert)
 
 
-    # Query db collection and mongoexport the collection to csv
-    #print list(db.booleans.find())
     print "loaded into booleans: ", db.booleans.count()
     return
 
@@ -209,13 +205,11 @@ def fcontextpase():
                 dfield = fcontext.split(":")
                 domain = dfield[2]
 
-        #TODO - perf
         tohash = fpath+ftype+fcontext
         Hash = md5.new(tohash).hexdigest()
         docinsert = {"Sys": system, "testnum": testnum, "Path": fpath, "Type": ftype, "Domain": domain, "Context": fcontext, "Hash": Hash, "date": datetime.datetime.utcnow()}
         db.fcontext.insert(docinsert)
-    
-    # Query db collection and mongoexport the collection to csv    
+       
     print "loaded into fcontext: ", db.fcontext.count()
     return
 
@@ -258,8 +252,8 @@ def serviceparse():
             sdomain = con[2]
         #sdomain = "<<none>>"
         service = dfile2[0]
+
         tohash = service+sdomain+Context
-	#TODO = pref
         Hash = md5.new(tohash).hexdigest()
         docinsert = {"Sys": system, "testnum": testnum, "Service": service, "Domain": sdomain, "Context": Context, "Hash": Hash, "date": datetime.datetime.utcnow()}
         db.service.insert(docinsert)
@@ -271,7 +265,7 @@ def serviceparse():
     return
     
 # ################################################################
-#  Build finderprints of service, policy and context
+#  Build fingerprints of service, policy and context
 #
 # ################################################################
 
@@ -413,8 +407,6 @@ def fcontextfp():
 # service collection
 # ################################################################
 def servicefp():
-    #client = MongoClient('localhost', 27017)
-    #db = client.service
     client = MongoClient('localhost', 27017)
     str(testnum)
     dbstr = testnum
@@ -535,7 +527,7 @@ def settestnum():
     return(testnum)
 
 # ################################################################
-# Set systen name
+# Set system name
 # ################################################################
 def setsysname():
     global system
@@ -589,8 +581,6 @@ def runsparse():
 # ################################################################
 # Search Relationships
 # ################################################################
-# Pull select fields from db, use python to search / sort data
-#TODO - pefr on search
 
 def searchrel():
     #client = MongoClient('localhost', 27017)
@@ -636,25 +626,18 @@ def searchrel():
     print "------------------------------------------------------------------------------------"
     svc_matches = [svc for svc in serviceres if dsel in str(svc['Domain'])]
     print tabulate(svc_matches, headers="keys", tablefmt="pipe")
-    #for item in svc_matches:
-    #    print "Service:  ", item['Service'],sep, "Domain: ",item['Domain'], sep,"Context:",item['Context']
     print " "
     print "------------------------------------------------------------------------------------"
     print "Booleans:"
     print "------------------------------------------------------------------------------------"
     bol_matches = [bol for bol in boolres if dsel in str(bol['Domain'])]
     print tabulate(bol_matches, headers="keys", tablefmt="pipe")
-    #for item in bol_matches:
-    #    print "Policy Name:", item['Boolean'],sep,"State:",item['State'],sep,"Default State:",item['Default'],sep,"Desc:",item['Description']
     print " "
     print "------------------------------------------------------------------------------------"
     print "File Contexts:"
     print "------------------------------------------------------------------------------------"
     fc_matches = [fc for fc in contextres if dsel in str(fc['Domain'])]
     print tabulate(fc_matches, headers="keys", tablefmt="pipe")
-    #OLD
-    #for item in fc_matches:     
-    #    print "Domain:",item['Domain'],sep,"Type:",item['Type'],sep,"Context:",item['Context'],sep,"File Path:", item['Path']
     print "------------------------------------------------------------------------------------"
     return
 
@@ -840,7 +823,6 @@ def stackdiff():
     ps.print_stats()
     stackDiffPerfs = s.getvalue()    
     # Store results to dB ########
-    # note the xxxPerfs is a type <str>
     stackDiffPerfs1 = stackDiffPerfs.lstrip()
     perfline = stackDiffPerfs1.splitlines()
     smry = perfline[0]
@@ -880,10 +862,10 @@ def diffs():
     print "Enter test # for test2"
     test2 = raw_input("Test2:")
     
-    print "Runing main diffs for finger prints on test:",test1," vs test:",test2
+    print "Running main diffs for finger prints on test:",test1," vs test:",test2
 
     
-    # Conect to results
+    # Connect to results
     client = MongoClient('localhost', 27017)
     db = client.results
 
@@ -910,7 +892,7 @@ def diffs():
     if maindiff != 0:
 	sfpdiff = cmp(t1sfp,t2sfp)
 	if sfpdiff != 0:
-	    print "************ Seervice FP DIFF!!"
+	    print "************ Service FP DIFF!!"
 	    print "Run SPF stack diff"
 	else:
 	    print "NO SPF Diff"
@@ -980,7 +962,7 @@ def diffs():
     
 
 # ################################################################
-# Tools - sub menu (put in items like clear db, backup reuslts, etc)
+# Tools - sub menu (put in items like clear db, backup results, etc)
 # ################################################################
 #TODO
 def tools():
