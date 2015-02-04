@@ -1,8 +1,9 @@
 # ################################################################
 # SELinux Integrity Instrumentation
 # Mike Libassi 
-# 2014/15
+# 2015
 # Code source: https://github.com/mikejl/research
+# Feb2015 - Fix to tab/space in collect function
 # ################################################################
 
 # ################################################################
@@ -73,38 +74,36 @@ def printfbsub():
 # Collect Raw Data from shell scripts 
 # ################################################################
 def collect(runanswer):
-        if runanswer == "Y":
-                print "Running collection scripts for system:", system, " Test#:", testnum
-                # -------------------------------------
-		args = ['sudo', '/home/mike/research/boolean_collect.sh', testnum, 'stdout=None', 'stderr=None']
-		str_args = [ str(x) for x in args ]
-                bstatus = subprocess.call(str_args)
-		if bstatus == 0:
-			print "Boolean Collection Done"
-		else:
-			print "Error in shell script"
-		# -------------------------------------
-		args = ['sudo', '/home/mike/research/fcontext_collect.sh', testnum]
-		str_args = [ str(x) for x in args ]
-                cstatus = subprocess.call(str_args)
-		if cstatus == 0:
-			print "File Context Collection Done"
-		else:
-			print "Error in shell script"
-		# -------------------------------------
-		args = ['sudo', '/home/mike/research/service_collect.sh', testnum]
-		str_args = [ str(x) for x in args ]
-                sstatus = subprocess.call(str_args)
-		if sstatus == 0:
-			print "Service Collection Done"
-		else:
-			print "Error in shell script"
-
-                print "Script Colection Done"
-        else:
-                print "Test NOT run"
-        # check for success?
-        return
+    if runanswer == "Y":
+	print "Running collection scripts for system:", system, " Test#:", testnum
+	# -------------------------------------
+	args = ['sudo', '/home/mike/research/boolean_collect.sh', testnum, 'stdout=None', 'stderr=None']
+	str_args = [ str(x) for x in args ]
+	bstatus = subprocess.call(str_args)
+	if bstatus == 0:
+	    print "Boolean Collection Done"
+	else:
+	    print "Error in shell script"
+	# -------------------------------------
+	args = ['sudo', '/home/mike/research/fcontext_collect.sh', testnum]
+	str_args = [ str(x) for x in args ]
+	cstatus = subprocess.call(str_args)
+	if cstatus == 0:
+	    print "File Context Collection Done"
+	else:
+	    print "Error in shell script"
+	# -------------------------------------
+	args = ['sudo', '/home/mike/research/service_collect.sh', testnum]
+	str_args = [ str(x) for x in args ]
+	sstatus = subprocess.call(str_args)
+	if sstatus == 0:
+	    print "Service Collection Done"
+	else:
+	    print "Error in shell script"
+	    print "Script Colection Done"
+    else:
+	print "Test NOT run"
+    return
 
 # ################################################################
 # Hash Function - not using .. needs extra tuple joins 

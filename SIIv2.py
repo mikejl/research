@@ -1,10 +1,14 @@
 # ################################################################
-# SELinux Integrity Instrumentation Version 2
-# Post testing copy with pref output removed.
+# SELinux Integrity Instrumentation v2
 # Mike Libassi 
 # 2015
 # Code source: https://github.com/mikejl/research
 # 
+# Version 2 
+# - removed cProfile output
+# - edit csv exports (remove date/time, add Domain and Context
+# - Fix tab/space
+# - Clean out old commented out code lines
 # ################################################################
 
 # ################################################################
@@ -75,46 +79,44 @@ def printfbsub():
 # Collect Raw Data from shell scripts 
 # ################################################################
 def collect(runanswer):
-        if runanswer == "Y":
-                print "Running collection scripts for system:", system, " Test#:", testnum
-                # -------------------------------------
-		args = ['sudo', '/home/mike/research/boolean_collect.sh', testnum, 'stdout=None', 'stderr=None']
-		str_args = [ str(x) for x in args ]
-                bstatus = subprocess.call(str_args)
-		if bstatus == 0:
-			print "Boolean Collection Done"
-		else:
-			print "Error in shell script"
-		# -------------------------------------
-		args = ['sudo', '/home/mike/research/fcontext_collect.sh', testnum]
-		str_args = [ str(x) for x in args ]
-                cstatus = subprocess.call(str_args)
-		if cstatus == 0:
-			print "File Context Collection Done"
-		else:
-			print "Error in shell script"
-		# -------------------------------------
-		args = ['sudo', '/home/mike/research/service_collect.sh', testnum]
-		str_args = [ str(x) for x in args ]
-                sstatus = subprocess.call(str_args)
-		if sstatus == 0:
-			print "Service Collection Done"
-		else:
-			print "Error in shell script"
+    if runanswer == "Y":
+	print "Running collection scripts for system:", system, " Test#:", testnum
+	# -------------------------------------
+	args = ['sudo', '/home/mike/research/boolean_collect.sh', testnum, 'stdout=None', 'stderr=None']
+	str_args = [ str(x) for x in args ]
+	bstatus = subprocess.call(str_args)
+	if bstatus == 0:
+	    print "Boolean Collection Done"
+	else:
+	    print "Error in shell script"
+	# -------------------------------------
+	args = ['sudo', '/home/mike/research/fcontext_collect.sh', testnum]
+	str_args = [ str(x) for x in args ]
+	cstatus = subprocess.call(str_args)
+	if cstatus == 0:
+	    print "File Context Collection Done"
+	else:
+	    print "Error in shell script"
+	# -------------------------------------
+	args = ['sudo', '/home/mike/research/service_collect.sh', testnum]
+	str_args = [ str(x) for x in args ]
+	sstatus = subprocess.call(str_args)
+	if sstatus == 0:
+	    print "Service Collection Done"
+	else:
+	    print "Error in shell script"
 
-                print "Script Colection Done"
-        else:
-                print "Test NOT run"
-        # check for success?
-        return
+	print "Script Colection Done"
+    else:
+	print "Test NOT run"
+    # 
+    return
 
 
 # ################################################################
 # Boolean Parse and Load
 # ################################################################
 def booleanparse():
-    #client = MongoClient('localhost', 27017)
-    #db = client.booleans
     client = MongoClient('localhost', 27017)
     str(testnum)
     dbstr = testnum
@@ -131,7 +133,6 @@ def booleanparse():
         ## Parse the boolean.txt
         fields1 = text.split()
         fields2 = text.split(')', 1)
-        #fields3 = text.split(',', 1)
         fields4 = text.rsplit('(')
         defaultb = fields4[1].split(',', 1)
         stateb = fields4[1].split(',', 1)
@@ -153,9 +154,10 @@ def booleanparse():
     return
 
 # ################################################################
-## File context parse and load
+# File context parse and load
 # ################################################################
 def fcontextpase():
+
     client = MongoClient('localhost', 27017)
     str(testnum)
     dbstr = testnum
@@ -236,7 +238,6 @@ def serviceparse():
             context1 = dfile6.split()
             for i in context1:
                 context1 = i
-                #print i
                 break
             con = i.split(":")
             Context = i
@@ -302,22 +303,22 @@ def boolsfp():
     smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
-#    with open(outFileName, "wb") as f:
-#	writer = csv.writer(f, delimiter=',', quotechar='|')
-#	for line in perfline:
-#	    linepart = line.split()
-#	    writer.writerow(linepart)    
-    # raw file
-#   outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
-#    ps.dump_stats(outProfileName)
-    # Db	    
-#    db = client.prefdata
-#    print "Store cProfile results to perfdata dB?"
-#    YN=raw_input("Y/N: ")
-#    if YN == "Y":
-#        docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Perfdata": bfpPerfs, "Perfsmry": smry, "Count": boolcount, "Date": datetime.datetime.utcnow()}
-#        print "Saving..."
-#        db.prefdata.insert(docinsert)
+    #with open(outFileName, "wb") as f:
+	#writer = csv.writer(f, delimiter=',', quotechar='|')
+	#for line in perfline:
+	    #linepart = line.split()
+	    #writer.writerow(linepart)    
+    ## raw file
+    #outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    #ps.dump_stats(outProfileName)
+    ## Db	    
+    #db = client.prefdata
+    #print "Store cProfile results to perfdata dB?"
+    #YN=raw_input("Y/N: ")
+    #if YN == "Y":
+        #docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Perfdata": bfpPerfs, "Perfsmry": smry, "Count": boolcount, "Date": datetime.datetime.utcnow()}
+        #print "Saving..."
+        #db.prefdata.insert(docinsert)
     # perf wrapper end #
     
     printfbsub()  
@@ -327,8 +328,6 @@ def boolsfp():
 # fContext collection
 # ################################################################
 def fcontextfp():
-    #client = MongoClient('localhost', 27017)
-    #db = client.fcontext
     client = MongoClient('localhost', 27017)
     str(testnum)
     dbstr = testnum
@@ -369,22 +368,22 @@ def fcontextfp():
     smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
-#    with open(outFileName, "wb") as f:
-#	writer = csv.writer(f, delimiter=',', quotechar='|')
-#	for line in perfline:
-#	    linepart = line.split()
-#	    writer.writerow(linepart)    
-    # raw file
-#    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
-#    ps.dump_stats(outProfileName)       
-    # DB Input
-#    db = client.prefdata
-#    print "Store cProfile results to perfdata dB?"
-#    YN=raw_input("Y/N: ")
-#    if YN == "Y":
-#	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": fcontextcount, "Perfdata": fcfpPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
-#	print "Saving..."
-#	db.prefdata.insert(docinsert)
+    #with open(outFileName, "wb") as f:
+	#writer = csv.writer(f, delimiter=',', quotechar='|')
+	#for line in perfline:
+	    #linepart = line.split()
+	    #writer.writerow(linepart)    
+    ## raw file
+    #outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    #ps.dump_stats(outProfileName)       
+    ## DB Input
+    #db = client.prefdata
+    #print "Store cProfile results to perfdata dB?"
+    #YN=raw_input("Y/N: ")
+    #if YN == "Y":
+	#docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": fcontextcount, "Perfdata": fcfpPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
+	#print "Saving..."
+	#db.prefdata.insert(docinsert)
     # perf wrapper end #    
 
     printfbsub()  
@@ -433,22 +432,22 @@ def servicefp():
     smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
-#    with open(outFileName, "wb") as f:
-#	writer = csv.writer(f, delimiter=',', quotechar='|')
-#	for line in perfline:
-#	    linepart = line.split()
-#	    writer.writerow(linepart)    
-    # raw file
-#    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
-#    ps.dump_stats(outProfileName)
-    # Db    
-#    db = client.prefdata
-#    print "Store cProfile results to perfdata dB?"
-#    YN=raw_input("Y/N: ")
-#    if YN == "Y":
-#	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": servicefpcount, "Perfdata": sfpPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
-#	print "Saving..."
-#	db.prefdata.insert(docinsert)
+    #with open(outFileName, "wb") as f:
+	#writer = csv.writer(f, delimiter=',', quotechar='|')
+	#for line in perfline:
+	    #linepart = line.split()
+	    #writer.writerow(linepart)    
+    ## raw file
+    #outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    #ps.dump_stats(outProfileName)
+    ## Db    
+    #db = client.prefdata
+    #print "Store cProfile results to perfdata dB?"
+    #YN=raw_input("Y/N: ")
+    #if YN == "Y":
+	#docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": servicefpcount, "Perfdata": sfpPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
+	#print "Saving..."
+	#db.prefdata.insert(docinsert)
     # perf wrapper end # 
     
     printfbsub()
@@ -570,7 +569,6 @@ def runsparse():
 # ################################################################
 
 def searchrel():
-    #client = MongoClient('localhost', 27017)
     client = MongoClient('localhost', 27017)
     str(testnum)
     dbstr = testnum
@@ -578,15 +576,12 @@ def searchrel():
     db = getattr(client,dbstr)      
 
     # Service    
-    #db = client.service
     serviceres = list(db.service.find({},{"Service":1 ,"Domain":1,"Context":1,"_id":0}))
     distinctsvc = list(db.service.distinct('Domain'))
     # Poicy
-    #db = client.booleans
     boolres = list(db.booleans.find({},{"Boolean":1 ,"Domain":1,"State":1, "Default":1, "Description":1,"_id":0}))
     distinctbols = list(db.booleans.distinct('Domain'))
     # File Context
-    #db = client.fcontext
     contextres = list(db.fcontext.find({},{"Path":1 ,"Domain":1,"Context":1, "Type":1,"_id":0}))
     distinctfc = list(db.fcontext.distinct('Domain'))
     print "------------------------------------------------------------------------------------"
@@ -718,7 +713,6 @@ def stackdiff():
     # Service Checks
     print "########## Service Compare Test 1 to Test 2 ##########"
     svcdiff = test1svc_dic.viewitems()^ test2svc_dic.viewitems()
-    #print tabulate(svcdiff)
     
     for diffitem in svcdiff:
 	dname =  diffitem[1]
@@ -748,7 +742,7 @@ def stackdiff():
     # Boolean checks
     print "########## Boolean Compare Test 1 to Test 2 ##########"
     boldiff = test1bol_dic.viewitems()^ test2bol_dic.viewitems()
-    #print tabulate(boldiff)
+    
     for diffitem in boldiff:
 	dname =  diffitem[1]
 	for xitem in t1bolStack:
@@ -777,7 +771,7 @@ def stackdiff():
     # File Context checks
     print "########## File Context Compare Test 1 to Test 2 ##########"
     fcdiff = test1fc_dic.viewitems()^ test2fc_dic.viewitems()
-    #print tabulate(fcdiff)
+
     for diffitem in fcdiff:
 	dname =  diffitem[1]
 	for xitem in t1fcStack:
@@ -815,22 +809,22 @@ def stackdiff():
     smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
-#    with open(outFileName, "wb") as f:
-#	writer = csv.writer(f, delimiter=',', quotechar='|')
-#	for line in perfline:
-#	    linepart = line.split()
-#	    writer.writerow(linepart)    
-    # raw file
-#    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
-#    ps.dump_stats(outProfileName)
-    # Db    
-#    db = client.prefdata
-#    print "Store cProfile results to perfdata dB?"
-#    YN=raw_input("Y/N: ")
-#    if YN == "Y":
-#	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": 0, "Perfdata": stackDiffPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
-#	print "Saving..."
-#	db.prefdata.insert(docinsert)
+    #with open(outFileName, "wb") as f:
+	#writer = csv.writer(f, delimiter=',', quotechar='|')
+	#for line in perfline:
+	    #linepart = line.split()
+	    #writer.writerow(linepart)    
+    ## raw file
+    #outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    #ps.dump_stats(outProfileName)
+    ## Db    
+    #db = client.prefdata
+    #print "Store cProfile results to perfdata dB?"
+    #YN=raw_input("Y/N: ")
+    #if YN == "Y":
+	#docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": 0, "Perfdata": stackDiffPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
+	#print "Saving..."
+	#db.prefdata.insert(docinsert)
     # perf wrapper end #   
     
     return
@@ -920,22 +914,22 @@ def diffs():
     smry = perfline[0]
     function_name = sys._getframe().f_code.co_name
     outFileName = system+"-"+function_name+"-"+"test"+testnum+".csv"
-    with open(outFileName, "wb") as f:
-	writer = csv.writer(f, delimiter=',', quotechar='|')
-	for line in perfline:
-	    linepart = line.split()
-	    writer.writerow(linepart)    
-    # raw file
-    outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
-    ps.dump_stats(outProfileName)
-    # Db    
-#    db = client.prefdata
-#    print "Store cProfile results to perfdata dB?"
-#    YN=raw_input("Y/N: ")
-#    if YN == "Y":
-#	docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": 0, "Perfdata": DiffPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
-#	print "Saving..."
-#	db.prefdata.insert(docinsert)
+    #with open(outFileName, "wb") as f:
+	#writer = csv.writer(f, delimiter=',', quotechar='|')
+	#for line in perfline:
+	    #linepart = line.split()
+	    #writer.writerow(linepart)    
+    ## raw file
+    #outProfileName = system+"-"+function_name+"-"+"test"+testnum+".profile"
+    #ps.dump_stats(outProfileName)
+    ## Db    
+    #db = client.prefdata
+    #print "Store cProfile results to perfdata dB?"
+    #YN=raw_input("Y/N: ")
+    #if YN == "Y":
+	#docinsert = {"Sys": system, "Testnum": testnum, "Function": function_name, "Count": 0, "Perfdata": DiffPerfs, "Perfsmry": smry, "Date": datetime.datetime.utcnow()}
+	#print "Saving..."
+	#db.prefdata.insert(docinsert)
 
     
     
@@ -962,26 +956,23 @@ def tools():
         sel=raw_input("Selection: ")
         if sel == "1":
             print "CSV export for test:", testnum
-	    #subprocess.call(['mongoexport --host localhost -d service -c service --csv -f "Sys,Service,Domain,Hash,date" > service.csv'], shell=True)
 	    str(testnum)
 	    soutcsvfile = system+"-"+"service"+"-"+"test"+testnum+".csv"
-	    svcexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c service --csv -f "Service,Domain,Hash,date" >' + " " + soutcsvfile
+	    svcexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c service --csv -f "Service,Domain,Hash,Context" >' + " " + soutcsvfile
 	    subprocess.call([svcexprt], shell=True)
-	    #subprocess.call(['mongoexport --host localhost -d booleans -c booleans --csv -f "Boolean,Description,Default,State,Hash,date" > boolean.csv'], shell=True)
 	    boutcsvfile = system+"-"+"booleans"+"-"+"test"+testnum+".csv"
-	    bolexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c booleans --csv -f "Boolean,Description,Default,State,Hash,date" >' + " " + boutcsvfile
+	    bolexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c booleans --csv -f "Boolean,Description,Default,State,Hash,Domain" >' + " " + boutcsvfile
 	    subprocess.call([bolexprt], shell=True)	    
-	    #subprocess.call(['mongoexport --host localhost -d fcontext -c fcontext --csv -f "Path,Type,Context,Hash,date" > fcontext.csv']
 	    fcoutcsvfile = system+"-"+"fcontext"+"-"+"test"+testnum+".csv"
-	    fcexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c fcontext --csv -f "Path,Type,Context,Hash,date" >' + " " + fcoutcsvfile
+	    fcexprt = 'mongoexport --host localhost -d' + " " + testnum + " " + '-c fcontext --csv -f "Path,Type,Context,Hash,Domain" >' + " " + fcoutcsvfile
 	    subprocess.call([fcexprt], shell=True)
 	    #prefdata
 	    pdoutcsvfile = system+"-"+"prefdata"+"-"+"test"+testnum+".csv"
-	    pdexprt = 'mongoexport --host localhost -d' + " " + "prefdata" + " " + '-c prefdata --csv -f "Function,Count,Perfsmry,Testnum,Date" >' + " " + pdoutcsvfile
+	    pdexprt = 'mongoexport --host localhost -d' + " " + "prefdata" + " " + '-c prefdata --csv -f "Function,Count,Perfsmry,Testnum" >' + " " + pdoutcsvfile
 	    subprocess.call([pdexprt], shell=True)
 	    #results
 	    routcsvfile = system+"-"+"results"+"-"+"test"+testnum+".csv"
-	    rexprt = 'mongoexport --host localhost -d' + " " + "results" + " " + '-c results --csv -f "contextFP,serviceFP,booleanFP,testnum,date" >' + " " + routcsvfile
+	    rexprt = 'mongoexport --host localhost -d' + " " + "results" + " " + '-c results --csv -f "contextFP,serviceFP,booleanFP,testnum" >' + " " + routcsvfile
 	    subprocess.call([rexprt], shell=True)		    
             continue
         elif sel == "2":
@@ -1007,8 +998,8 @@ def tools():
 # ################################################################
     #1. Enter Test #"
     #2. Enter System name"
-    #3. Run Collect Scripts (disabled)"
-    #4. Run parsing (boolens, service and context) sub-menu (disabled) "
+    #3. Run Collect Scripts"
+    #4. Run parsing (boolens, service and context) sub-menu "
     #5. Run / view finger prints"
     #6. Run / View Diffs"
     #7. Search / View Relationships"
@@ -1033,12 +1024,10 @@ def main():
             setsysname()
             continue
         elif sel == 3:
-	    print "Disabled"
-            #runscripts()
+            runscripts()
             continue
         elif sel == 4:
-	    print "Disabled"
-            #runsparse()
+            runsparse()
             continue 
         elif sel == 5:
             fpsub()
