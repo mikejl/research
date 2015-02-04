@@ -1,14 +1,18 @@
 research
 ========
-
+SELinux Integrity Instrumentation (SII)
 Dissertation code and files.
 To be pulled into test systems:
+
+SII.py - The main SII testing framework ran on lab systems (capturing and saving cProfile data)
+SIIv2.py - Copy with Profile data output off and changed to allow running on local system against dB backups.
+
 Required:  
 Python 2.7  
 MongoDB  
 pymongo  
 setools  
-See https://github.com/mikejl/research/wiki/Setup-Notes  
+ 
 
 Python packages used:  
 import md5  
