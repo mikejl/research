@@ -141,7 +141,11 @@ def booleanparse():
         stateb = fields4[1].split(',', 1)
         Boolean = fields1[0].strip()
         Description = fields2[1].strip()
-        Default = defaultb[0].strip()
+        #Default = defaultb[0].strip() # Parseing issue
+        # Added to fix parse issue
+	Default2 = defaultb[1].split(',', 2)
+	Default3 = Default2[0].split(')')
+	Default = Default3[0].strip()
         State = stateb[0].strip()
         base_filename = Boolean
         domain1 = open(os.path.join(dir_name, base_filename + filename_suffix), 'r')
