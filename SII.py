@@ -3,7 +3,9 @@
 # Mike Libassi 
 # 2015
 # Code source: https://github.com/mikejl/research
-# Feb2015 - Fix to tab/space in collect function
+# Feb2015 
+# - Fix to tab/space in collect function
+# - Fix boolean parsing for default
 # ################################################################
 
 # ################################################################
@@ -141,7 +143,7 @@ def booleanparse():
         stateb = fields4[1].split(',', 1)
         Boolean = fields1[0].strip()
         Description = fields2[1].strip()
-        #Default = defaultb[0].strip() # Parseing issue
+        #Default = defaultb[0].strip() # Parsing issue
         # Added to fix parse issue
 	Default2 = defaultb[1].split(',', 2)
 	Default3 = Default2[0].split(')')
